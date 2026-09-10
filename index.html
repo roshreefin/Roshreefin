@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>RoShree — Finance</title>
+<title>FinApp — Family Finance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -291,6 +292,18 @@ textarea.fi-ta:focus{border-color:var(--blue)}
 .sec-block{background:var(--card);border-radius:var(--r);border:1px solid var(--border);margin-bottom:9px;overflow:hidden}
 .sec-hdr{padding:10px 13px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
 .sec-title{font-size:12px;font-weight:700;color:var(--text)}
+.sec-title-input{
+  font-size:12px;font-weight:700;color:var(--text);
+  background:transparent;border:none;outline:none;
+  border-bottom:1px dashed transparent;
+  cursor:text;width:100%;max-width:260px;
+  font-family:var(--font);padding:0;
+  transition:border-color .15s;
+}
+.sec-title-input:hover,.sec-title-input:focus{
+  border-bottom-color:var(--blue);
+  background:rgba(59,130,246,.06);border-radius:3px;
+}
 .sec-total{font-size:12px;font-weight:700;color:var(--blue);font-family:var(--mono)}
 .sec-body{padding:7px 11px 9px}
 .col-hdr{display:flex;gap:5px;padding:2px 0 6px;border-bottom:1.5px solid var(--border);margin-bottom:4px}
@@ -609,7 +622,7 @@ table.cltbl tr:hover td{background:#f8faff}
           <div class="month-bar" id="monthBar"></div>
           <div class="sum-bar">
             <div class="sum-item"><div class="sum-lbl">Total Income</div><div class="sum-val g" id="sumInc">₹0</div></div>
-            <div class="sum-item"><div class="sum-lbl">Pure Expense</div><div class="sum-val r" id="sumExp">₹0</div></div>
+            <div class="sum-item"><div class="sum-lbl">Expense</div><div class="sum-val r" id="sumExp">₹0</div></div>
             <div class="sum-item"><div class="sum-lbl">Balance</div><div class="sum-val" id="sumBal" style="color:#fff">₹0</div></div>
             <div class="sum-item"><div class="sum-lbl">Savings</div><div class="sum-val" style="color:#34d399" id="sumSave">₹0</div></div>
             <div class="sum-item"><div class="sum-lbl">Investment</div><div class="sum-val" style="color:#a78bfa" id="sumInvest">₹0</div></div>
@@ -1145,8 +1158,15 @@ function getSectionObj(mData, secKey) {
 function allMonthStats() {
   const d = getData() || emptyAppData();
   return MONTHS.map(m => {
-    const t = calcMonthTotals(d.months[m]||defaultMonth());
-    return { month:m, ...t, balance: t.income - t.expense - t.totalSI };
+    const t    = calcMonthTotals(d.months[m]||defaultMonth());
+    const rBal = t.rohitInc - t.rohitExp - t.rohitSI;
+    const dBal = t.dhanuInc - t.wifeExp  - t.dhanuSI;
+    return {
+      month:   m,
+      ...t,
+      expense: t.rohitExp + t.wifeExp,   // raw expense shown under each person's name
+      balance: rBal + dBal               // ribbon balance = sum of both persons' balances
+    };
   });
 }
 
@@ -1198,11 +1218,12 @@ function renderDashboard() {
   const allStats = allMonthStats();
   const stats    = chosen==='all' ? allStats : [allStats.find(s=>s.month===chosen)||allStats[0]];
   const totInc     = stats.reduce((s,x)=>s+x.income,0);
-  const totExp     = stats.reduce((s,x)=>s+x.expense,0);        // pure expense (excl SI)
   const totSave    = stats.reduce((s,x)=>s+(x.totalSave||0),0);
   const totInvest  = stats.reduce((s,x)=>s+(x.totalInvest||0),0);
   const totSI      = totSave + totInvest;
-  const totBal     = totInc - totExp - totSI;
+  const totBal     = stats.reduce((s,x)=>s+x.balance,0);
+  // Expense = Income - (Savings+Investment) - Balance  ← matches ribbon formula
+  const totExp     = Math.max(0, totInc - totSI - totBal);
   const saveRate   = totInc>0 ? Math.round(totSave/totInc*100)   : 0;
   const investRate = totInc>0 ? Math.round(totInvest/totInc*100) : 0;
   const totA       = d.assets.reduce((s,a)=>s+(Number(a.rohit)||0)+(Number(a.dhanashree)||0),0);
@@ -1218,7 +1239,7 @@ function renderDashboard() {
 
   document.getElementById('dashKPIs').innerHTML = `
     <div class="kpi income"><div class="kpi-label">Total Income</div><div class="kpi-value income">${fmt(totInc)}</div><div class="kpi-sub">${chosen==='all'?'Annual':chosen}</div></div>
-    <div class="kpi expense"><div class="kpi-label">Pure Expense</div><div class="kpi-value expense">${fmt(totExp)}</div><div class="kpi-sub">${totInc>0?Math.round(totExp/totInc*100):0}% of income</div></div>
+    <div class="kpi expense"><div class="kpi-label">Expense</div><div class="kpi-value expense">${fmt(totExp)}</div><div class="kpi-sub">${totInc>0?Math.round(totExp/totInc*100):0}% of income</div></div>
     <div class="kpi saving"><div class="kpi-label">Saving Rate</div><div class="kpi-value saving">${saveRate}%</div><div class="kpi-sub">${fmt(totSave)} saved</div></div>
     <div class="kpi invest"><div class="kpi-label">Invest Rate</div><div class="kpi-value invest">${investRate}%</div><div class="kpi-sub">${fmt(totInvest)} invested</div></div>`;
 
@@ -1239,9 +1260,15 @@ function renderDashboard() {
   if (canvasMon) {
     chartMon = new Chart(canvasMon.getContext('2d'),{
       type:'bar', data:{labels:MONTHS,datasets:[
-        {label:'Income',data:allStats.map(s=>s.income),backgroundColor:'rgba(5,150,105,.7)',borderRadius:3},
-        {label:'Expense',data:allStats.map(s=>s.expense),backgroundColor:'rgba(220,38,38,.7)',borderRadius:3}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9},callback:v=>'₹'+Number(v).toLocaleString('en-IN')}}}}
+        {label:'Income',     data:allStats.map(s=>s.income),                                              backgroundColor:'rgba(5,150,105,.75)',  borderRadius:3},
+        {label:'Expense',    data:allStats.map(s=>Math.max(0, s.income - (s.totalSave+s.totalInvest) - s.balance)), backgroundColor:'rgba(220,38,38,.75)',   borderRadius:3},
+        {label:'Savings',    data:allStats.map(s=>s.totalSave||0),                                        backgroundColor:'rgba(16,185,129,.75)', borderRadius:3},
+        {label:'Investment', data:allStats.map(s=>s.totalInvest||0),                                      backgroundColor:'rgba(139,92,246,.75)', borderRadius:3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},
+        scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9},callback:v=>'₹'+Number(v).toLocaleString('en-IN')}}}
+      }
     });
   }
 
@@ -1570,7 +1597,18 @@ function addSIItem() {
   renderPlanner();
 }
 
-function renderSecBlock(secKey, title, obj, isIncome=false) {
+function renameSec(secKey, newTitle) {
+  const d = getData();
+  if (!d.months[curMonth]) d.months[curMonth] = defaultMonth();
+  if (!d.months[curMonth]._secTitles) d.months[curMonth]._secTitles = {};
+  d.months[curMonth]._secTitles[secKey] = newTitle;
+  saveData(d);
+}
+
+function renderSecBlock(secKey, defaultTitle, obj, isIncome=false) {
+  const d      = getData();
+  const saved  = d?.months?.[curMonth]?._secTitles?.[secKey];
+  const title  = saved || defaultTitle;
   const total    = Object.values(obj||{}).reduce((s,v)=>s+(Number(v.value)||0),0);
   const totColor = isIncome ? 'var(--income)' : 'var(--blue)';
   let   rows     = `<div class="col-hdr"><span class="ch-lbl">Label</span><span class="ch-val">Amount (₹)</span><span class="ch-rem">Remark</span><span class="ch-act"></span></div>`;
@@ -1584,8 +1622,11 @@ function renderSecBlock(secKey, title, obj, isIncome=false) {
     </div>`;
   });
   return `<div class="sec-block">
-    <div class="sec-hdr" onclick="toggleSection(this)">
-      <span class="sec-title">${title}</span>
+    <div class="sec-hdr" onclick="event.target.tagName!=='INPUT'&&toggleSection(this)">
+      <input class="sec-title-input" value="${esc(title)}"
+        onclick="event.stopPropagation()"
+        onchange="renameSec('${secKey}',this.value)"
+        title="Click to rename section"/>
       <div style="display:flex;align-items:center;gap:5px">
         <span class="sec-total" style="color:${totColor}">${fmt(total)}</span>
         <span style="color:var(--muted);font-size:10px">▼</span>
@@ -1619,15 +1660,15 @@ function updateItem(secKey, k, field, val) {
 
 function updateSummaryBar(mData) {
   const t    = calcMonthTotals(mData);
-  // Ribbon Balance = Rohit's balance + Dhanashree's balance
-  // Each person: Salary − Expense − their own SI
   const rBal = t.rohitInc - t.rohitExp - t.rohitSI;
   const dBal = t.dhanuInc - t.wifeExp  - t.dhanuSI;
   const bal  = rBal + dBal;
+  // Ribbon Expense = Income - (Savings + Investment) - Balance
+  const exp  = t.income - t.totalSI - bal;
   const saveRate   = t.income>0 ? Math.round(t.totalSave/t.income*100)   : 0;
   const investRate = t.income>0 ? Math.round(t.totalInvest/t.income*100) : 0;
   document.getElementById('sumInc').textContent     = fmt(t.income);
-  document.getElementById('sumExp').textContent     = fmt(t.expense);
+  document.getElementById('sumExp').textContent     = fmt(Math.max(0, exp));
   document.getElementById('sumBal').textContent     = fmtS(bal);
   document.getElementById('sumBal').className       = 'sum-val '+(bal>=0?'g':'r');
   document.getElementById('sumSave').textContent    = fmt(t.totalSave);
