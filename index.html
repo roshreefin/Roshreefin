@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>RoShree — Family Finance</title>
+<title>FinApp — Family Finance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -292,18 +292,6 @@ textarea.fi-ta:focus{border-color:var(--blue)}
 .sec-block{background:var(--card);border-radius:var(--r);border:1px solid var(--border);margin-bottom:9px;overflow:hidden}
 .sec-hdr{padding:10px 13px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
 .sec-title{font-size:12px;font-weight:700;color:var(--text)}
-.sec-title-input{
-  font-size:12px;font-weight:700;color:var(--text);
-  background:transparent;border:none;outline:none;
-  border-bottom:1px dashed transparent;
-  cursor:text;width:100%;max-width:260px;
-  font-family:var(--font);padding:0;
-  transition:border-color .15s;
-}
-.sec-title-input:hover,.sec-title-input:focus{
-  border-bottom-color:var(--blue);
-  background:rgba(59,130,246,.06);border-radius:3px;
-}
 .sec-total{font-size:12px;font-weight:700;color:var(--blue);font-family:var(--mono)}
 .sec-body{padding:7px 11px 9px}
 .col-hdr{display:flex;gap:5px;padding:2px 0 6px;border-bottom:1.5px solid var(--border);margin-bottom:4px}
@@ -622,7 +610,7 @@ table.cltbl tr:hover td{background:#f8faff}
           <div class="month-bar" id="monthBar"></div>
           <div class="sum-bar">
             <div class="sum-item"><div class="sum-lbl">Total Income</div><div class="sum-val g" id="sumInc">₹0</div></div>
-            <div class="sum-item"><div class="sum-lbl">Expense</div><div class="sum-val r" id="sumExp">₹0</div></div>
+            <div class="sum-item"><div class="sum-lbl">Pure Expense</div><div class="sum-val r" id="sumExp">₹0</div></div>
             <div class="sum-item"><div class="sum-lbl">Balance</div><div class="sum-val" id="sumBal" style="color:#fff">₹0</div></div>
             <div class="sum-item"><div class="sum-lbl">Savings</div><div class="sum-val" style="color:#34d399" id="sumSave">₹0</div></div>
             <div class="sum-item"><div class="sum-lbl">Investment</div><div class="sum-val" style="color:#a78bfa" id="sumInvest">₹0</div></div>
@@ -654,7 +642,6 @@ table.cltbl tr:hover td{background:#f8faff}
             <select class="fi" id="liabSel" onchange="renderLiabilities()" style="width:155px">
               <option value="all">All Liabilities</option>
               <option value="car">Car Loan EMI</option>
-              <option value="home">Home Loan EMI</option>
             </select>
           </div>
           <div id="liabContent"></div>
@@ -986,9 +973,7 @@ function emptyAppData() {
     months: {},
     assets: [],
     liabilities: [],
-    carLoan:  buildCarLoan(),
-    homeLoan: buildHomeLoan(),
-    hlNotes:  ''
+    carLoan: buildCarLoan()
   };
 }
 
@@ -1161,15 +1146,8 @@ function getSectionObj(mData, secKey) {
 function allMonthStats() {
   const d = getData() || emptyAppData();
   return MONTHS.map(m => {
-    const t    = calcMonthTotals(d.months[m]||defaultMonth());
-    const rBal = t.rohitInc - t.rohitExp - t.rohitSI;
-    const dBal = t.dhanuInc - t.wifeExp  - t.dhanuSI;
-    return {
-      month:   m,
-      ...t,
-      expense: t.rohitExp + t.wifeExp,   // raw expense shown under each person's name
-      balance: rBal + dBal               // ribbon balance = sum of both persons' balances
-    };
+    const t = calcMonthTotals(d.months[m]||defaultMonth());
+    return { month:m, ...t, balance: t.income - t.expense - t.totalSI };
   });
 }
 
@@ -1221,12 +1199,11 @@ function renderDashboard() {
   const allStats = allMonthStats();
   const stats    = chosen==='all' ? allStats : [allStats.find(s=>s.month===chosen)||allStats[0]];
   const totInc     = stats.reduce((s,x)=>s+x.income,0);
+  const totExp     = stats.reduce((s,x)=>s+x.expense,0);        // pure expense (excl SI)
   const totSave    = stats.reduce((s,x)=>s+(x.totalSave||0),0);
   const totInvest  = stats.reduce((s,x)=>s+(x.totalInvest||0),0);
   const totSI      = totSave + totInvest;
-  const totBal     = stats.reduce((s,x)=>s+x.balance,0);
-  // Expense = Income - (Savings+Investment) - Balance  ← matches ribbon formula
-  const totExp     = Math.max(0, totInc - totSI - totBal);
+  const totBal     = totInc - totExp - totSI;
   const saveRate   = totInc>0 ? Math.round(totSave/totInc*100)   : 0;
   const investRate = totInc>0 ? Math.round(totInvest/totInc*100) : 0;
   const totA       = d.assets.reduce((s,a)=>s+(Number(a.rohit)||0)+(Number(a.dhanashree)||0),0);
@@ -1242,7 +1219,7 @@ function renderDashboard() {
 
   document.getElementById('dashKPIs').innerHTML = `
     <div class="kpi income"><div class="kpi-label">Total Income</div><div class="kpi-value income">${fmt(totInc)}</div><div class="kpi-sub">${chosen==='all'?'Annual':chosen}</div></div>
-    <div class="kpi expense"><div class="kpi-label">Expense</div><div class="kpi-value expense">${fmt(totExp)}</div><div class="kpi-sub">${totInc>0?Math.round(totExp/totInc*100):0}% of income</div></div>
+    <div class="kpi expense"><div class="kpi-label">Pure Expense</div><div class="kpi-value expense">${fmt(totExp)}</div><div class="kpi-sub">${totInc>0?Math.round(totExp/totInc*100):0}% of income</div></div>
     <div class="kpi saving"><div class="kpi-label">Saving Rate</div><div class="kpi-value saving">${saveRate}%</div><div class="kpi-sub">${fmt(totSave)} saved</div></div>
     <div class="kpi invest"><div class="kpi-label">Invest Rate</div><div class="kpi-value invest">${investRate}%</div><div class="kpi-sub">${fmt(totInvest)} invested</div></div>`;
 
@@ -1263,15 +1240,9 @@ function renderDashboard() {
   if (canvasMon) {
     chartMon = new Chart(canvasMon.getContext('2d'),{
       type:'bar', data:{labels:MONTHS,datasets:[
-        {label:'Income',     data:allStats.map(s=>s.income),                                              backgroundColor:'rgba(5,150,105,.75)',  borderRadius:3},
-        {label:'Expense',    data:allStats.map(s=>Math.max(0, s.income - (s.totalSave+s.totalInvest) - s.balance)), backgroundColor:'rgba(220,38,38,.75)',   borderRadius:3},
-        {label:'Savings',    data:allStats.map(s=>s.totalSave||0),                                        backgroundColor:'rgba(16,185,129,.75)', borderRadius:3},
-        {label:'Investment', data:allStats.map(s=>s.totalInvest||0),                                      backgroundColor:'rgba(139,92,246,.75)', borderRadius:3}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},
-        scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9},callback:v=>'₹'+Number(v).toLocaleString('en-IN')}}}
-      }
+        {label:'Income',data:allStats.map(s=>s.income),backgroundColor:'rgba(5,150,105,.7)',borderRadius:3},
+        {label:'Expense',data:allStats.map(s=>s.expense),backgroundColor:'rgba(220,38,38,.7)',borderRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9},callback:v=>'₹'+Number(v).toLocaleString('en-IN')}}}}
     });
   }
 
@@ -1600,18 +1571,7 @@ function addSIItem() {
   renderPlanner();
 }
 
-function renameSec(secKey, newTitle) {
-  const d = getData();
-  if (!d.months[curMonth]) d.months[curMonth] = defaultMonth();
-  if (!d.months[curMonth]._secTitles) d.months[curMonth]._secTitles = {};
-  d.months[curMonth]._secTitles[secKey] = newTitle;
-  saveData(d);
-}
-
-function renderSecBlock(secKey, defaultTitle, obj, isIncome=false) {
-  const d      = getData();
-  const saved  = d?.months?.[curMonth]?._secTitles?.[secKey];
-  const title  = saved || defaultTitle;
+function renderSecBlock(secKey, title, obj, isIncome=false) {
   const total    = Object.values(obj||{}).reduce((s,v)=>s+(Number(v.value)||0),0);
   const totColor = isIncome ? 'var(--income)' : 'var(--blue)';
   let   rows     = `<div class="col-hdr"><span class="ch-lbl">Label</span><span class="ch-val">Amount (₹)</span><span class="ch-rem">Remark</span><span class="ch-act"></span></div>`;
@@ -1625,11 +1585,8 @@ function renderSecBlock(secKey, defaultTitle, obj, isIncome=false) {
     </div>`;
   });
   return `<div class="sec-block">
-    <div class="sec-hdr" onclick="event.target.tagName!=='INPUT'&&toggleSection(this)">
-      <input class="sec-title-input" value="${esc(title)}"
-        onclick="event.stopPropagation()"
-        onchange="renameSec('${secKey}',this.value)"
-        title="Click to rename section"/>
+    <div class="sec-hdr" onclick="toggleSection(this)">
+      <span class="sec-title">${title}</span>
       <div style="display:flex;align-items:center;gap:5px">
         <span class="sec-total" style="color:${totColor}">${fmt(total)}</span>
         <span style="color:var(--muted);font-size:10px">▼</span>
@@ -1663,15 +1620,15 @@ function updateItem(secKey, k, field, val) {
 
 function updateSummaryBar(mData) {
   const t    = calcMonthTotals(mData);
+  // Ribbon Balance = Rohit's balance + Dhanashree's balance
+  // Each person: Salary − Expense − their own SI
   const rBal = t.rohitInc - t.rohitExp - t.rohitSI;
   const dBal = t.dhanuInc - t.wifeExp  - t.dhanuSI;
   const bal  = rBal + dBal;
-  // Ribbon Expense = Income - (Savings + Investment) - Balance
-  const exp  = t.income - t.totalSI - bal;
   const saveRate   = t.income>0 ? Math.round(t.totalSave/t.income*100)   : 0;
   const investRate = t.income>0 ? Math.round(t.totalInvest/t.income*100) : 0;
   document.getElementById('sumInc').textContent     = fmt(t.income);
-  document.getElementById('sumExp').textContent     = fmt(Math.max(0, exp));
+  document.getElementById('sumExp').textContent     = fmt(t.expense);
   document.getElementById('sumBal').textContent     = fmtS(bal);
   document.getElementById('sumBal').className       = 'sum-val '+(bal>=0?'g':'r');
   document.getElementById('sumSave').textContent    = fmt(t.totalSave);
@@ -1794,208 +1751,8 @@ function deleteAsset(i) {
 // LIABILITIES
 // ══════════════════════════════════════════════════════════════
 function renderLiabilities() {
-  document.getElementById('liabSel').value==='car'  ? renderCarLoan()  :
-  document.getElementById('liabSel').value==='home' ? renderHomeLoan() : renderAllLiab();
+  document.getElementById('liabSel').value==='car' ? renderCarLoan() : renderAllLiab();
 }
-
-// ══════════════════════════════════════════════════════════════
-// HOME LOAN
-// ══════════════════════════════════════════════════════════════
-function buildHomeLoan() {
-  return [{"month":1,"inst":31,"due":"10/10/2026","year":2026,"open":5869615.95,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38886.21,"principal":6233.79,"close":5863382.16,"paid":false},{"month":2,"inst":32,"due":"11/10/2026","year":2026,"open":5863382.16,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38844.91,"principal":6275.09,"close":5857107.06,"paid":false},{"month":3,"inst":33,"due":"12/10/2026","year":2026,"open":5857107.06,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38803.33,"principal":6316.67,"close":5850790.4,"paid":false},{"month":4,"inst":34,"due":"01/10/2027","year":2027,"open":5850790.4,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38761.49,"principal":6358.51,"close":5844431.88,"paid":false},{"month":5,"inst":35,"due":"02/10/2027","year":2027,"open":5844431.88,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38719.36,"principal":6400.64,"close":5838031.24,"paid":false},{"month":6,"inst":36,"due":"03/10/2027","year":2027,"open":5838031.24,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38676.96,"principal":6443.04,"close":5831588.2,"paid":false},{"month":7,"inst":37,"due":"04/10/2027","year":2027,"open":5831588.2,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38634.27,"principal":6485.73,"close":5825102.47,"paid":false},{"month":8,"inst":38,"due":"05/10/2027","year":2027,"open":5825102.47,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38591.3,"principal":6528.7,"close":5818573.78,"paid":false},{"month":9,"inst":39,"due":"06/10/2027","year":2027,"open":5818573.78,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38548.05,"principal":6571.95,"close":5812001.83,"paid":false},{"month":10,"inst":40,"due":"07/10/2027","year":2027,"open":5812001.83,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38504.51,"principal":6615.49,"close":5805386.34,"paid":false},{"month":11,"inst":41,"due":"08/10/2027","year":2027,"open":5805386.34,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38460.68,"principal":6659.32,"close":5798727.02,"paid":false},{"month":12,"inst":42,"due":"09/10/2027","year":2027,"open":5798727.02,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38416.57,"principal":6703.43,"close":5792023.59,"paid":false},{"month":13,"inst":43,"due":"10/10/2027","year":2027,"open":5792023.59,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38372.16,"principal":6747.84,"close":5785275.75,"paid":false},{"month":14,"inst":44,"due":"11/10/2027","year":2027,"open":5785275.75,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38327.45,"principal":6792.55,"close":5778483.2,"paid":false},{"month":15,"inst":45,"due":"12/10/2027","year":2027,"open":5778483.2,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38282.45,"principal":6837.55,"close":5771645.65,"paid":false},{"month":16,"inst":46,"due":"01/10/2028","year":2028,"open":5771645.65,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38237.15,"principal":6882.85,"close":5764762.8,"paid":false},{"month":17,"inst":47,"due":"02/10/2028","year":2028,"open":5764762.8,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38191.55,"principal":6928.45,"close":5757834.36,"paid":false},{"month":18,"inst":48,"due":"03/10/2028","year":2028,"open":5757834.36,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38145.65,"principal":6974.35,"close":5750860.01,"paid":false},{"month":19,"inst":49,"due":"04/10/2028","year":2028,"open":5750860.01,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38099.45,"principal":7020.55,"close":5743839.46,"paid":false},{"month":20,"inst":50,"due":"05/10/2028","year":2028,"open":5743839.46,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38052.94,"principal":7067.06,"close":5736772.39,"paid":false},{"month":21,"inst":51,"due":"06/10/2028","year":2028,"open":5736772.39,"emi":45120.0,"prepay":0,"roi":7.95,"interest":38006.12,"principal":7113.88,"close":5729658.51,"paid":false},{"month":22,"inst":52,"due":"07/10/2028","year":2028,"open":5729658.51,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37958.99,"principal":7161.01,"close":5722497.5,"paid":false},{"month":23,"inst":53,"due":"08/10/2028","year":2028,"open":5722497.5,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37911.55,"principal":7208.45,"close":5715289.04,"paid":false},{"month":24,"inst":54,"due":"09/10/2028","year":2028,"open":5715289.04,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37863.79,"principal":7256.21,"close":5708032.83,"paid":false},{"month":25,"inst":55,"due":"10/10/2028","year":2028,"open":5708032.83,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37815.72,"principal":7304.28,"close":5700728.55,"paid":false},{"month":26,"inst":56,"due":"11/10/2028","year":2028,"open":5700728.55,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37767.33,"principal":7352.67,"close":5693375.88,"paid":false},{"month":27,"inst":57,"due":"12/10/2028","year":2028,"open":5693375.88,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37718.62,"principal":7401.38,"close":5685974.49,"paid":false},{"month":28,"inst":58,"due":"01/10/2029","year":2029,"open":5685974.49,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37669.58,"principal":7450.42,"close":5678524.07,"paid":false},{"month":29,"inst":59,"due":"02/10/2029","year":2029,"open":5678524.07,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37620.22,"principal":7499.78,"close":5671024.3,"paid":false},{"month":30,"inst":60,"due":"03/10/2029","year":2029,"open":5671024.3,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37570.54,"principal":7549.46,"close":5663474.83,"paid":false},{"month":31,"inst":61,"due":"04/10/2029","year":2029,"open":5663474.83,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37520.52,"principal":7599.48,"close":5655875.35,"paid":false},{"month":32,"inst":62,"due":"05/10/2029","year":2029,"open":5655875.35,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37470.17,"principal":7649.83,"close":5648225.53,"paid":false},{"month":33,"inst":63,"due":"06/10/2029","year":2029,"open":5648225.53,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37419.49,"principal":7700.51,"close":5640525.02,"paid":false},{"month":34,"inst":64,"due":"07/10/2029","year":2029,"open":5640525.02,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37368.48,"principal":7751.52,"close":5632773.5,"paid":false},{"month":35,"inst":65,"due":"08/10/2029","year":2029,"open":5632773.5,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37317.12,"principal":7802.88,"close":5624970.62,"paid":false},{"month":36,"inst":66,"due":"09/10/2029","year":2029,"open":5624970.62,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37265.43,"principal":7854.57,"close":5617116.05,"paid":false},{"month":37,"inst":67,"due":"10/10/2029","year":2029,"open":5617116.05,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37213.39,"principal":7906.61,"close":5609209.45,"paid":false},{"month":38,"inst":68,"due":"11/10/2029","year":2029,"open":5609209.45,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37161.01,"principal":7958.99,"close":5601250.46,"paid":false},{"month":39,"inst":69,"due":"12/10/2029","year":2029,"open":5601250.46,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37108.28,"principal":8011.72,"close":5593238.75,"paid":false},{"month":40,"inst":70,"due":"01/10/2030","year":2030,"open":5593238.75,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37055.21,"principal":8064.79,"close":5585173.95,"paid":false},{"month":41,"inst":71,"due":"02/10/2030","year":2030,"open":5585173.95,"emi":45120.0,"prepay":0,"roi":7.95,"interest":37001.78,"principal":8118.22,"close":5577055.73,"paid":false},{"month":42,"inst":72,"due":"03/10/2030","year":2030,"open":5577055.73,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36947.99,"principal":8172.01,"close":5568883.72,"paid":false},{"month":43,"inst":73,"due":"04/10/2030","year":2030,"open":5568883.72,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36893.85,"principal":8226.15,"close":5560657.58,"paid":false},{"month":44,"inst":74,"due":"05/10/2030","year":2030,"open":5560657.58,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36839.36,"principal":8280.64,"close":5552376.93,"paid":false},{"month":45,"inst":75,"due":"06/10/2030","year":2030,"open":5552376.93,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36784.5,"principal":8335.5,"close":5544041.43,"paid":false},{"month":46,"inst":76,"due":"07/10/2030","year":2030,"open":5544041.43,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36729.27,"principal":8390.73,"close":5535650.71,"paid":false},{"month":47,"inst":77,"due":"08/10/2030","year":2030,"open":5535650.71,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36673.69,"principal":8446.31,"close":5527204.39,"paid":false},{"month":48,"inst":78,"due":"09/10/2030","year":2030,"open":5527204.39,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36617.73,"principal":8502.27,"close":5518702.12,"paid":false},{"month":49,"inst":79,"due":"10/10/2030","year":2030,"open":5518702.12,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36561.4,"principal":8558.6,"close":5510143.52,"paid":false},{"month":50,"inst":80,"due":"11/10/2030","year":2030,"open":5510143.52,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36504.7,"principal":8615.3,"close":5501528.22,"paid":false},{"month":51,"inst":81,"due":"12/10/2030","year":2030,"open":5501528.22,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36447.62,"principal":8672.38,"close":5492855.85,"paid":false},{"month":52,"inst":82,"due":"01/10/2031","year":2031,"open":5492855.85,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36390.17,"principal":8729.83,"close":5484126.02,"paid":false},{"month":53,"inst":83,"due":"02/10/2031","year":2031,"open":5484126.02,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36332.33,"principal":8787.67,"close":5475338.35,"paid":false},{"month":54,"inst":84,"due":"03/10/2031","year":2031,"open":5475338.35,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36274.12,"principal":8845.88,"close":5466492.47,"paid":false},{"month":55,"inst":85,"due":"04/10/2031","year":2031,"open":5466492.47,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36215.51,"principal":8904.49,"close":5457587.98,"paid":false},{"month":56,"inst":86,"due":"05/10/2031","year":2031,"open":5457587.98,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36156.52,"principal":8963.48,"close":5448624.5,"paid":false},{"month":57,"inst":87,"due":"06/10/2031","year":2031,"open":5448624.5,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36097.14,"principal":9022.86,"close":5439601.64,"paid":false},{"month":58,"inst":88,"due":"07/10/2031","year":2031,"open":5439601.64,"emi":45120.0,"prepay":0,"roi":7.95,"interest":36037.36,"principal":9082.64,"close":5430519.0,"paid":false},{"month":59,"inst":89,"due":"08/10/2031","year":2031,"open":5430519.0,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35977.19,"principal":9142.81,"close":5421376.19,"paid":false},{"month":60,"inst":90,"due":"09/10/2031","year":2031,"open":5421376.19,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35916.62,"principal":9203.38,"close":5412172.81,"paid":false},{"month":61,"inst":91,"due":"10/10/2031","year":2031,"open":5412172.81,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35855.64,"principal":9264.36,"close":5402908.45,"paid":false},{"month":62,"inst":92,"due":"11/10/2031","year":2031,"open":5402908.45,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35794.27,"principal":9325.73,"close":5393582.72,"paid":false},{"month":63,"inst":93,"due":"12/10/2031","year":2031,"open":5393582.72,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35732.49,"principal":9387.51,"close":5384195.21,"paid":false},{"month":64,"inst":94,"due":"01/10/2032","year":2032,"open":5384195.21,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35670.29,"principal":9449.71,"close":5374745.5,"paid":false},{"month":65,"inst":95,"due":"02/10/2032","year":2032,"open":5374745.5,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35607.69,"principal":9512.31,"close":5365233.19,"paid":false},{"month":66,"inst":96,"due":"03/10/2032","year":2032,"open":5365233.19,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35544.67,"principal":9575.33,"close":5355657.86,"paid":false},{"month":67,"inst":97,"due":"04/10/2032","year":2032,"open":5355657.86,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35481.23,"principal":9638.77,"close":5346019.09,"paid":false},{"month":68,"inst":98,"due":"05/10/2032","year":2032,"open":5346019.09,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35417.38,"principal":9702.62,"close":5336316.47,"paid":false},{"month":69,"inst":99,"due":"06/10/2032","year":2032,"open":5336316.47,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35353.1,"principal":9766.9,"close":5326549.56,"paid":false},{"month":70,"inst":100,"due":"07/10/2032","year":2032,"open":5326549.56,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35288.39,"principal":9831.61,"close":5316717.95,"paid":false},{"month":71,"inst":101,"due":"08/10/2032","year":2032,"open":5316717.95,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35223.26,"principal":9896.74,"close":5306821.21,"paid":false},{"month":72,"inst":102,"due":"09/10/2032","year":2032,"open":5306821.21,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35157.69,"principal":9962.31,"close":5296858.9,"paid":false},{"month":73,"inst":103,"due":"10/10/2032","year":2032,"open":5296858.9,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35091.69,"principal":10028.31,"close":5286830.59,"paid":false},{"month":74,"inst":104,"due":"11/10/2032","year":2032,"open":5286830.59,"emi":45120.0,"prepay":0,"roi":7.95,"interest":35025.25,"principal":10094.75,"close":5276735.84,"paid":false},{"month":75,"inst":105,"due":"12/10/2032","year":2032,"open":5276735.84,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34958.37,"principal":10161.63,"close":5266574.22,"paid":false},{"month":76,"inst":106,"due":"01/10/2033","year":2033,"open":5266574.22,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34891.05,"principal":10228.95,"close":5256345.27,"paid":false},{"month":77,"inst":107,"due":"02/10/2033","year":2033,"open":5256345.27,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34823.29,"principal":10296.71,"close":5246048.56,"paid":false},{"month":78,"inst":108,"due":"03/10/2033","year":2033,"open":5246048.56,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34755.07,"principal":10364.93,"close":5235683.63,"paid":false},{"month":79,"inst":109,"due":"04/10/2033","year":2033,"open":5235683.63,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34686.4,"principal":10433.6,"close":5225250.04,"paid":false},{"month":80,"inst":110,"due":"05/10/2033","year":2033,"open":5225250.04,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34617.28,"principal":10502.72,"close":5214747.32,"paid":false},{"month":81,"inst":111,"due":"06/10/2033","year":2033,"open":5214747.32,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34547.7,"principal":10572.3,"close":5204175.02,"paid":false},{"month":82,"inst":112,"due":"07/10/2033","year":2033,"open":5204175.02,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34477.66,"principal":10642.34,"close":5193532.68,"paid":false},{"month":83,"inst":113,"due":"08/10/2033","year":2033,"open":5193532.68,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34407.15,"principal":10712.85,"close":5182819.83,"paid":false},{"month":84,"inst":114,"due":"09/10/2033","year":2033,"open":5182819.83,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34336.18,"principal":10783.82,"close":5172036.01,"paid":false},{"month":85,"inst":115,"due":"10/10/2033","year":2033,"open":5172036.01,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34264.74,"principal":10855.26,"close":5161180.75,"paid":false},{"month":86,"inst":116,"due":"11/10/2033","year":2033,"open":5161180.75,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34192.82,"principal":10927.18,"close":5150253.58,"paid":false},{"month":87,"inst":117,"due":"12/10/2033","year":2033,"open":5150253.58,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34120.43,"principal":10999.57,"close":5139254.01,"paid":false},{"month":88,"inst":118,"due":"01/10/2034","year":2034,"open":5139254.01,"emi":45120.0,"prepay":0,"roi":7.95,"interest":34047.56,"principal":11072.44,"close":5128181.56,"paid":false},{"month":89,"inst":119,"due":"02/10/2034","year":2034,"open":5128181.56,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33974.2,"principal":11145.8,"close":5117035.77,"paid":false},{"month":90,"inst":120,"due":"03/10/2034","year":2034,"open":5117035.77,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33900.36,"principal":11219.64,"close":5105816.13,"paid":false},{"month":91,"inst":121,"due":"04/10/2034","year":2034,"open":5105816.13,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33826.03,"principal":11293.97,"close":5094522.16,"paid":false},{"month":92,"inst":122,"due":"05/10/2034","year":2034,"open":5094522.16,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33751.21,"principal":11368.79,"close":5083153.37,"paid":false},{"month":93,"inst":123,"due":"06/10/2034","year":2034,"open":5083153.37,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33675.89,"principal":11444.11,"close":5071709.26,"paid":false},{"month":94,"inst":124,"due":"07/10/2034","year":2034,"open":5071709.26,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33600.07,"principal":11519.93,"close":5060189.33,"paid":false},{"month":95,"inst":125,"due":"08/10/2034","year":2034,"open":5060189.33,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33523.75,"principal":11596.25,"close":5048593.09,"paid":false},{"month":96,"inst":126,"due":"09/10/2034","year":2034,"open":5048593.09,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33446.93,"principal":11673.07,"close":5036920.02,"paid":false},{"month":97,"inst":127,"due":"10/10/2034","year":2034,"open":5036920.02,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33369.6,"principal":11750.4,"close":5025169.61,"paid":false},{"month":98,"inst":128,"due":"11/10/2034","year":2034,"open":5025169.61,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33291.75,"principal":11828.25,"close":5013341.36,"paid":false},{"month":99,"inst":129,"due":"12/10/2034","year":2034,"open":5013341.36,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33213.39,"principal":11906.61,"close":5001434.75,"paid":false},{"month":100,"inst":130,"due":"01/10/2035","year":2035,"open":5001434.75,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33134.51,"principal":11985.49,"close":4989449.25,"paid":false},{"month":101,"inst":131,"due":"02/10/2035","year":2035,"open":4989449.25,"emi":45120.0,"prepay":0,"roi":7.95,"interest":33055.1,"principal":12064.9,"close":4977384.35,"paid":false},{"month":102,"inst":132,"due":"03/10/2035","year":2035,"open":4977384.35,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32975.17,"principal":12144.83,"close":4965239.53,"paid":false},{"month":103,"inst":133,"due":"04/10/2035","year":2035,"open":4965239.53,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32894.71,"principal":12225.29,"close":4953014.24,"paid":false},{"month":104,"inst":134,"due":"05/10/2035","year":2035,"open":4953014.24,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32813.72,"principal":12306.28,"close":4940707.96,"paid":false},{"month":105,"inst":135,"due":"06/10/2035","year":2035,"open":4940707.96,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32732.19,"principal":12387.81,"close":4928320.15,"paid":false},{"month":106,"inst":136,"due":"07/10/2035","year":2035,"open":4928320.15,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32650.12,"principal":12469.88,"close":4915850.27,"paid":false},{"month":107,"inst":137,"due":"08/10/2035","year":2035,"open":4915850.27,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32567.51,"principal":12552.49,"close":4903297.78,"paid":false},{"month":108,"inst":138,"due":"09/10/2035","year":2035,"open":4903297.78,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32484.35,"principal":12635.65,"close":4890662.12,"paid":false},{"month":109,"inst":139,"due":"10/10/2035","year":2035,"open":4890662.12,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32400.64,"principal":12719.36,"close":4877942.76,"paid":false},{"month":110,"inst":140,"due":"11/10/2035","year":2035,"open":4877942.76,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32316.37,"principal":12803.63,"close":4865139.13,"paid":false},{"month":111,"inst":141,"due":"12/10/2035","year":2035,"open":4865139.13,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32231.55,"principal":12888.45,"close":4852250.68,"paid":false},{"month":112,"inst":142,"due":"01/10/2036","year":2036,"open":4852250.68,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32146.16,"principal":12973.84,"close":4839276.84,"paid":false},{"month":113,"inst":143,"due":"02/10/2036","year":2036,"open":4839276.84,"emi":45120.0,"prepay":0,"roi":7.95,"interest":32060.21,"principal":13059.79,"close":4826217.05,"paid":false},{"month":114,"inst":144,"due":"03/10/2036","year":2036,"open":4826217.05,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31973.69,"principal":13146.31,"close":4813070.74,"paid":false},{"month":115,"inst":145,"due":"04/10/2036","year":2036,"open":4813070.74,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31886.59,"principal":13233.41,"close":4799837.33,"paid":false},{"month":116,"inst":146,"due":"05/10/2036","year":2036,"open":4799837.33,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31798.92,"principal":13321.08,"close":4786516.25,"paid":false},{"month":117,"inst":147,"due":"06/10/2036","year":2036,"open":4786516.25,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31710.67,"principal":13409.33,"close":4773106.92,"paid":false},{"month":118,"inst":148,"due":"07/10/2036","year":2036,"open":4773106.92,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31621.83,"principal":13498.17,"close":4759608.76,"paid":false},{"month":119,"inst":149,"due":"08/10/2036","year":2036,"open":4759608.76,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31532.41,"principal":13587.59,"close":4746021.16,"paid":false},{"month":120,"inst":150,"due":"09/10/2036","year":2036,"open":4746021.16,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31442.39,"principal":13677.61,"close":4732343.55,"paid":false},{"month":121,"inst":151,"due":"10/10/2036","year":2036,"open":4732343.55,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31351.78,"principal":13768.22,"close":4718575.33,"paid":false},{"month":122,"inst":152,"due":"11/10/2036","year":2036,"open":4718575.33,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31260.56,"principal":13859.44,"close":4704715.89,"paid":false},{"month":123,"inst":153,"due":"12/10/2036","year":2036,"open":4704715.89,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31168.74,"principal":13951.26,"close":4690764.63,"paid":false},{"month":124,"inst":154,"due":"01/10/2037","year":2037,"open":4690764.63,"emi":45120.0,"prepay":0,"roi":7.95,"interest":31076.32,"principal":14043.68,"close":4676720.95,"paid":false},{"month":125,"inst":155,"due":"02/10/2037","year":2037,"open":4676720.95,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30983.28,"principal":14136.72,"close":4662584.23,"paid":false},{"month":126,"inst":156,"due":"03/10/2037","year":2037,"open":4662584.23,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30889.62,"principal":14230.38,"close":4648353.85,"paid":false},{"month":127,"inst":157,"due":"04/10/2037","year":2037,"open":4648353.85,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30795.34,"principal":14324.66,"close":4634029.19,"paid":false},{"month":128,"inst":158,"due":"05/10/2037","year":2037,"open":4634029.19,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30700.44,"principal":14419.56,"close":4619609.63,"paid":false},{"month":129,"inst":159,"due":"06/10/2037","year":2037,"open":4619609.63,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30604.91,"principal":14515.09,"close":4605094.55,"paid":false},{"month":130,"inst":160,"due":"07/10/2037","year":2037,"open":4605094.55,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30508.75,"principal":14611.25,"close":4590483.3,"paid":false},{"month":131,"inst":161,"due":"08/10/2037","year":2037,"open":4590483.3,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30411.95,"principal":14708.05,"close":4575775.25,"paid":false},{"month":132,"inst":162,"due":"09/10/2037","year":2037,"open":4575775.25,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30314.51,"principal":14805.49,"close":4560969.76,"paid":false},{"month":133,"inst":163,"due":"10/10/2037","year":2037,"open":4560969.76,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30216.42,"principal":14903.58,"close":4546066.19,"paid":false},{"month":134,"inst":164,"due":"11/10/2037","year":2037,"open":4546066.19,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30117.69,"principal":15002.31,"close":4531063.88,"paid":false},{"month":135,"inst":165,"due":"12/10/2037","year":2037,"open":4531063.88,"emi":45120.0,"prepay":0,"roi":7.95,"interest":30018.3,"principal":15101.7,"close":4515962.17,"paid":false},{"month":136,"inst":166,"due":"01/10/2038","year":2038,"open":4515962.17,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29918.25,"principal":15201.75,"close":4500760.42,"paid":false},{"month":137,"inst":167,"due":"02/10/2038","year":2038,"open":4500760.42,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29817.54,"principal":15302.46,"close":4485457.96,"paid":false},{"month":138,"inst":168,"due":"03/10/2038","year":2038,"open":4485457.96,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29716.16,"principal":15403.84,"close":4470054.12,"paid":false},{"month":139,"inst":169,"due":"04/10/2038","year":2038,"open":4470054.12,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29614.11,"principal":15505.89,"close":4454548.23,"paid":false},{"month":140,"inst":170,"due":"05/10/2038","year":2038,"open":4454548.23,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29511.38,"principal":15608.62,"close":4438939.61,"paid":false},{"month":141,"inst":171,"due":"06/10/2038","year":2038,"open":4438939.61,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29407.97,"principal":15712.03,"close":4423227.59,"paid":false},{"month":142,"inst":172,"due":"07/10/2038","year":2038,"open":4423227.59,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29303.88,"principal":15816.12,"close":4407411.47,"paid":false},{"month":143,"inst":173,"due":"08/10/2038","year":2038,"open":4407411.47,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29199.1,"principal":15920.9,"close":4391490.57,"paid":false},{"month":144,"inst":174,"due":"09/10/2038","year":2038,"open":4391490.57,"emi":45120.0,"prepay":0,"roi":7.95,"interest":29093.63,"principal":16026.37,"close":4375464.19,"paid":false},{"month":145,"inst":175,"due":"10/10/2038","year":2038,"open":4375464.19,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28987.45,"principal":16132.55,"close":4359331.64,"paid":false},{"month":146,"inst":176,"due":"11/10/2038","year":2038,"open":4359331.64,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28880.57,"principal":16239.43,"close":4343092.22,"paid":false},{"month":147,"inst":177,"due":"12/10/2038","year":2038,"open":4343092.22,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28772.99,"principal":16347.01,"close":4326745.2,"paid":false},{"month":148,"inst":178,"due":"01/10/2039","year":2039,"open":4326745.2,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28664.69,"principal":16455.31,"close":4310289.89,"paid":false},{"month":149,"inst":179,"due":"02/10/2039","year":2039,"open":4310289.89,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28555.67,"principal":16564.33,"close":4293725.56,"paid":false},{"month":150,"inst":180,"due":"03/10/2039","year":2039,"open":4293725.56,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28445.93,"principal":16674.07,"close":4277051.49,"paid":false},{"month":151,"inst":181,"due":"04/10/2039","year":2039,"open":4277051.49,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28335.47,"principal":16784.53,"close":4260266.96,"paid":false},{"month":152,"inst":182,"due":"05/10/2039","year":2039,"open":4260266.96,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28224.27,"principal":16895.73,"close":4243371.23,"paid":false},{"month":153,"inst":183,"due":"06/10/2039","year":2039,"open":4243371.23,"emi":45120.0,"prepay":0,"roi":7.95,"interest":28112.33,"principal":17007.67,"close":4226363.56,"paid":false},{"month":154,"inst":184,"due":"07/10/2039","year":2039,"open":4226363.56,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27999.66,"principal":17120.34,"close":4209243.22,"paid":false},{"month":155,"inst":185,"due":"08/10/2039","year":2039,"open":4209243.22,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27886.24,"principal":17233.76,"close":4192009.46,"paid":false},{"month":156,"inst":186,"due":"09/10/2039","year":2039,"open":4192009.46,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27772.06,"principal":17347.94,"close":4174661.52,"paid":false},{"month":157,"inst":187,"due":"10/10/2039","year":2039,"open":4174661.52,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27657.13,"principal":17462.87,"close":4157198.65,"paid":false},{"month":158,"inst":188,"due":"11/10/2039","year":2039,"open":4157198.65,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27541.44,"principal":17578.56,"close":4139620.09,"paid":false},{"month":159,"inst":189,"due":"12/10/2039","year":2039,"open":4139620.09,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27424.98,"principal":17695.02,"close":4121925.07,"paid":false},{"month":160,"inst":190,"due":"01/10/2040","year":2040,"open":4121925.07,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27307.75,"principal":17812.25,"close":4104112.83,"paid":false},{"month":161,"inst":191,"due":"02/10/2040","year":2040,"open":4104112.83,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27189.75,"principal":17930.25,"close":4086182.58,"paid":false},{"month":162,"inst":192,"due":"03/10/2040","year":2040,"open":4086182.58,"emi":45120.0,"prepay":0,"roi":7.95,"interest":27070.96,"principal":18049.04,"close":4068133.54,"paid":false},{"month":163,"inst":193,"due":"04/10/2040","year":2040,"open":4068133.54,"emi":45120.0,"prepay":0,"roi":7.95,"interest":26951.38,"principal":18168.62,"close":4049964.92,"paid":false},{"month":164,"inst":194,"due":"05/10/2040","year":2040,"open":4049964.92,"emi":45120.0,"prepay":0,"roi":7.95,"interest":26831.02,"principal":18288.98,"close":4031675.94,"paid":false},{"month":165,"inst":195,"due":"06/10/2040","year":2040,"open":4031675.94,"emi":45120.0,"prepay":0,"roi":7.95,"interest":26709.85,"principal":18410.15,"close":4013265.79,"paid":false},{"month":166,"inst":196,"due":"07/10/2040","year":2040,"open":4013265.79,"emi":45120.0,"prepay":0,"roi":7.95,"interest":26587.89,"principal":18532.11,"close":3994733.68,"paid":false},{"month":167,"inst":197,"due":"08/10/2040","year":2040,"open":3994733.68,"emi":45120.0,"prepay":0,"roi":7.95,"interest":26465.11,"principal":18654.89,"close":3976078.79,"paid":false},{"month":168,"inst":198,"due":"09/10/2040","year":2040,"open":3976078.79,"emi":45120.0,"prepay":0,"roi":7.95,"interest":26341.52,"principal":18778.48,"close":3957300.31,"paid":false},{"month":169,"inst":199,"due":"10/10/2040","year":2040,"open":3957300.31,"emi":45120.0,"prepay":0,"roi":7.95,"interest":26217.11,"principal":18902.89,"close":3938397.42,"paid":false},{"month":170,"inst":200,"due":"11/10/2040","year":2040,"open":3938397.42,"emi":45120.0,"prepay":0,"roi":7.95,"interest":26091.88,"principal":19028.12,"close":3919369.31,"paid":false},{"month":171,"inst":201,"due":"12/10/2040","year":2040,"open":3919369.31,"emi":45120.0,"prepay":0,"roi":7.95,"interest":25965.82,"principal":19154.18,"close":3900215.13,"paid":false},{"month":172,"inst":202,"due":"01/10/2041","year":2041,"open":3900215.13,"emi":45120.0,"prepay":0,"roi":7.95,"interest":25838.93,"principal":19281.07,"close":3880934.05,"paid":false},{"month":173,"inst":203,"due":"02/10/2041","year":2041,"open":3880934.05,"emi":45120.0,"prepay":0,"roi":7.95,"interest":25711.19,"principal":19408.81,"close":3861525.24,"paid":false},{"month":174,"inst":204,"due":"03/10/2041","year":2041,"open":3861525.24,"emi":45120.0,"prepay":0,"roi":7.95,"interest":25582.6,"principal":19537.4,"close":3841987.85,"paid":false},{"month":175,"inst":205,"due":"04/10/2041","year":2041,"open":3841987.85,"emi":45120.0,"prepay":0,"roi":7.95,"interest":25453.17,"principal":19666.83,"close":3822321.02,"paid":false},{"month":176,"inst":206,"due":"05/10/2041","year":2041,"open":3822321.02,"emi":45120.0,"prepay":0,"roi":7.95,"interest":25322.88,"principal":19797.12,"close":3802523.89,"paid":false},{"month":177,"inst":207,"due":"06/10/2041","year":2041,"open":3802523.89,"emi":45120.0,"prepay":0,"roi":7.95,"interest":25191.72,"principal":19928.28,"close":3782595.61,"paid":false},{"month":178,"inst":208,"due":"07/10/2041","year":2041,"open":3782595.61,"emi":45120.0,"prepay":0,"roi":7.95,"interest":25059.7,"principal":20060.3,"close":3762535.31,"paid":false},{"month":179,"inst":209,"due":"08/10/2041","year":2041,"open":3762535.31,"emi":45120.0,"prepay":0,"roi":7.95,"interest":24926.8,"principal":20193.2,"close":3742342.11,"paid":false},{"month":180,"inst":210,"due":"09/10/2041","year":2041,"open":3742342.11,"emi":45120.0,"prepay":0,"roi":7.95,"interest":24793.02,"principal":20326.98,"close":3722015.12,"paid":false},{"month":181,"inst":211,"due":"10/10/2041","year":2041,"open":3722015.12,"emi":45120.0,"prepay":0,"roi":7.95,"interest":24658.35,"principal":20461.65,"close":3701553.47,"paid":false},{"month":182,"inst":212,"due":"11/10/2041","year":2041,"open":3701553.47,"emi":45120.0,"prepay":0,"roi":7.95,"interest":24522.79,"principal":20597.21,"close":3680956.26,"paid":false},{"month":183,"inst":213,"due":"12/10/2041","year":2041,"open":3680956.26,"emi":45120.0,"prepay":0,"roi":7.95,"interest":24386.34,"principal":20733.66,"close":3660222.6,"paid":false},{"month":184,"inst":214,"due":"01/10/2042","year":2042,"open":3660222.6,"emi":45120.0,"prepay":0,"roi":7.95,"interest":24248.97,"principal":20871.03,"close":3639351.57,"paid":false},{"month":185,"inst":215,"due":"02/10/2042","year":2042,"open":3639351.57,"emi":45120.0,"prepay":0,"roi":7.95,"interest":24110.7,"principal":21009.3,"close":3618342.28,"paid":false},{"month":186,"inst":216,"due":"03/10/2042","year":2042,"open":3618342.28,"emi":45120.0,"prepay":0,"roi":7.95,"interest":23971.52,"principal":21148.48,"close":3597193.8,"paid":false},{"month":187,"inst":217,"due":"04/10/2042","year":2042,"open":3597193.8,"emi":45120.0,"prepay":0,"roi":7.95,"interest":23831.41,"principal":21288.59,"close":3575905.2,"paid":false},{"month":188,"inst":218,"due":"05/10/2042","year":2042,"open":3575905.2,"emi":45120.0,"prepay":0,"roi":7.95,"interest":23690.37,"principal":21429.63,"close":3554475.58,"paid":false},{"month":189,"inst":219,"due":"06/10/2042","year":2042,"open":3554475.58,"emi":45120.0,"prepay":0,"roi":7.95,"interest":23548.4,"principal":21571.6,"close":3532903.98,"paid":false},{"month":190,"inst":220,"due":"07/10/2042","year":2042,"open":3532903.98,"emi":45120.0,"prepay":0,"roi":7.95,"interest":23405.49,"principal":21714.51,"close":3511189.47,"paid":false},{"month":191,"inst":221,"due":"08/10/2042","year":2042,"open":3511189.47,"emi":45120.0,"prepay":0,"roi":7.95,"interest":23261.63,"principal":21858.37,"close":3489331.1,"paid":false},{"month":192,"inst":222,"due":"09/10/2042","year":2042,"open":3489331.1,"emi":45120.0,"prepay":0,"roi":7.95,"interest":23116.82,"principal":22003.18,"close":3467327.92,"paid":false},{"month":193,"inst":223,"due":"10/10/2042","year":2042,"open":3467327.92,"emi":45120.0,"prepay":0,"roi":7.95,"interest":22971.05,"principal":22148.95,"close":3445178.96,"paid":false},{"month":194,"inst":224,"due":"11/10/2042","year":2042,"open":3445178.96,"emi":45120.0,"prepay":0,"roi":7.95,"interest":22824.31,"principal":22295.69,"close":3422883.27,"paid":false},{"month":195,"inst":225,"due":"12/10/2042","year":2042,"open":3422883.27,"emi":45120.0,"prepay":0,"roi":7.95,"interest":22676.6,"principal":22443.4,"close":3400439.87,"paid":false},{"month":196,"inst":226,"due":"01/10/2043","year":2043,"open":3400439.87,"emi":45120.0,"prepay":0,"roi":7.95,"interest":22527.91,"principal":22592.09,"close":3377847.79,"paid":false},{"month":197,"inst":227,"due":"02/10/2043","year":2043,"open":3377847.79,"emi":45120.0,"prepay":0,"roi":7.95,"interest":22378.24,"principal":22741.76,"close":3355106.03,"paid":false},{"month":198,"inst":228,"due":"03/10/2043","year":2043,"open":3355106.03,"emi":45120.0,"prepay":0,"roi":7.95,"interest":22227.58,"principal":22892.42,"close":3332213.61,"paid":false},{"month":199,"inst":229,"due":"04/10/2043","year":2043,"open":3332213.61,"emi":45120.0,"prepay":0,"roi":7.95,"interest":22075.92,"principal":23044.08,"close":3309169.52,"paid":false},{"month":200,"inst":230,"due":"05/10/2043","year":2043,"open":3309169.52,"emi":45120.0,"prepay":0,"roi":7.95,"interest":21923.25,"principal":23196.75,"close":3285972.77,"paid":false},{"month":201,"inst":231,"due":"06/10/2043","year":2043,"open":3285972.77,"emi":45120.0,"prepay":0,"roi":7.95,"interest":21769.57,"principal":23350.43,"close":3262622.34,"paid":false},{"month":202,"inst":232,"due":"07/10/2043","year":2043,"open":3262622.34,"emi":45120.0,"prepay":0,"roi":7.95,"interest":21614.87,"principal":23505.13,"close":3239117.21,"paid":false},{"month":203,"inst":233,"due":"08/10/2043","year":2043,"open":3239117.21,"emi":45120.0,"prepay":0,"roi":7.95,"interest":21459.15,"principal":23660.85,"close":3215456.37,"paid":false},{"month":204,"inst":234,"due":"09/10/2043","year":2043,"open":3215456.37,"emi":45120.0,"prepay":0,"roi":7.95,"interest":21302.4,"principal":23817.6,"close":3191638.76,"paid":false},{"month":205,"inst":235,"due":"10/10/2043","year":2043,"open":3191638.76,"emi":45120.0,"prepay":0,"roi":7.95,"interest":21144.61,"principal":23975.39,"close":3167663.37,"paid":false},{"month":206,"inst":236,"due":"11/10/2043","year":2043,"open":3167663.37,"emi":45120.0,"prepay":0,"roi":7.95,"interest":20985.77,"principal":24134.23,"close":3143529.14,"paid":false},{"month":207,"inst":237,"due":"12/10/2043","year":2043,"open":3143529.14,"emi":45120.0,"prepay":0,"roi":7.95,"interest":20825.88,"principal":24294.12,"close":3119235.02,"paid":false},{"month":208,"inst":238,"due":"01/10/2044","year":2044,"open":3119235.02,"emi":45120.0,"prepay":0,"roi":7.95,"interest":20664.93,"principal":24455.07,"close":3094779.95,"paid":false},{"month":209,"inst":239,"due":"02/10/2044","year":2044,"open":3094779.95,"emi":45120.0,"prepay":0,"roi":7.95,"interest":20502.92,"principal":24617.08,"close":3070162.87,"paid":false},{"month":210,"inst":240,"due":"03/10/2044","year":2044,"open":3070162.87,"emi":45120.0,"prepay":0,"roi":7.95,"interest":20339.83,"principal":24780.17,"close":3045382.7,"paid":false},{"month":211,"inst":241,"due":"04/10/2044","year":2044,"open":3045382.7,"emi":45120.0,"prepay":0,"roi":7.95,"interest":20175.66,"principal":24944.34,"close":3020438.36,"paid":false},{"month":212,"inst":242,"due":"05/10/2044","year":2044,"open":3020438.36,"emi":45120.0,"prepay":0,"roi":7.95,"interest":20010.4,"principal":25109.6,"close":2995328.76,"paid":false},{"month":213,"inst":243,"due":"06/10/2044","year":2044,"open":2995328.76,"emi":45120.0,"prepay":0,"roi":7.95,"interest":19844.05,"principal":25275.95,"close":2970052.82,"paid":false},{"month":214,"inst":244,"due":"07/10/2044","year":2044,"open":2970052.82,"emi":45120.0,"prepay":0,"roi":7.95,"interest":19676.6,"principal":25443.4,"close":2944609.42,"paid":false},{"month":215,"inst":245,"due":"08/10/2044","year":2044,"open":2944609.42,"emi":45120.0,"prepay":0,"roi":7.95,"interest":19508.04,"principal":25611.96,"close":2918997.45,"paid":false},{"month":216,"inst":246,"due":"09/10/2044","year":2044,"open":2918997.45,"emi":45120.0,"prepay":0,"roi":7.95,"interest":19338.36,"principal":25781.64,"close":2893215.81,"paid":false},{"month":217,"inst":247,"due":"10/10/2044","year":2044,"open":2893215.81,"emi":45120.0,"prepay":0,"roi":7.95,"interest":19167.55,"principal":25952.45,"close":2867263.37,"paid":false},{"month":218,"inst":248,"due":"11/10/2044","year":2044,"open":2867263.37,"emi":45120.0,"prepay":0,"roi":7.95,"interest":18995.62,"principal":26124.38,"close":2841138.99,"paid":false},{"month":219,"inst":249,"due":"12/10/2044","year":2044,"open":2841138.99,"emi":45120.0,"prepay":0,"roi":7.95,"interest":18822.55,"principal":26297.45,"close":2814841.53,"paid":false},{"month":220,"inst":250,"due":"01/10/2045","year":2045,"open":2814841.53,"emi":45120.0,"prepay":0,"roi":7.95,"interest":18648.33,"principal":26471.67,"close":2788369.86,"paid":false},{"month":221,"inst":251,"due":"02/10/2045","year":2045,"open":2788369.86,"emi":45120.0,"prepay":0,"roi":7.95,"interest":18472.95,"principal":26647.05,"close":2761722.81,"paid":false},{"month":222,"inst":252,"due":"03/10/2045","year":2045,"open":2761722.81,"emi":45120.0,"prepay":0,"roi":7.95,"interest":18296.41,"principal":26823.59,"close":2734899.22,"paid":false},{"month":223,"inst":253,"due":"04/10/2045","year":2045,"open":2734899.22,"emi":45120.0,"prepay":0,"roi":7.95,"interest":18118.71,"principal":27001.29,"close":2707897.93,"paid":false},{"month":224,"inst":254,"due":"05/10/2045","year":2045,"open":2707897.93,"emi":45120.0,"prepay":0,"roi":7.95,"interest":17939.82,"principal":27180.18,"close":2680717.75,"paid":false},{"month":225,"inst":255,"due":"06/10/2045","year":2045,"open":2680717.75,"emi":45120.0,"prepay":0,"roi":7.95,"interest":17759.76,"principal":27360.24,"close":2653357.51,"paid":false},{"month":226,"inst":256,"due":"07/10/2045","year":2045,"open":2653357.51,"emi":45120.0,"prepay":0,"roi":7.95,"interest":17578.49,"principal":27541.51,"close":2625816.0,"paid":false},{"month":227,"inst":257,"due":"08/10/2045","year":2045,"open":2625816.0,"emi":45120.0,"prepay":0,"roi":7.95,"interest":17396.03,"principal":27723.97,"close":2598092.03,"paid":false},{"month":228,"inst":258,"due":"09/10/2045","year":2045,"open":2598092.03,"emi":45120.0,"prepay":0,"roi":7.95,"interest":17212.36,"principal":27907.64,"close":2570184.39,"paid":false},{"month":229,"inst":259,"due":"10/10/2045","year":2045,"open":2570184.39,"emi":45120.0,"prepay":0,"roi":7.95,"interest":17027.47,"principal":28092.53,"close":2542091.86,"paid":false},{"month":230,"inst":260,"due":"11/10/2045","year":2045,"open":2542091.86,"emi":45120.0,"prepay":0,"roi":7.95,"interest":16841.36,"principal":28278.64,"close":2513813.22,"paid":false},{"month":231,"inst":261,"due":"12/10/2045","year":2045,"open":2513813.22,"emi":45120.0,"prepay":0,"roi":7.95,"interest":16654.01,"principal":28465.99,"close":2485347.24,"paid":false},{"month":232,"inst":262,"due":"01/10/2046","year":2046,"open":2485347.24,"emi":45120.0,"prepay":0,"roi":7.95,"interest":16465.43,"principal":28654.57,"close":2456692.66,"paid":false},{"month":233,"inst":263,"due":"02/10/2046","year":2046,"open":2456692.66,"emi":45120.0,"prepay":0,"roi":7.95,"interest":16275.59,"principal":28844.41,"close":2427848.25,"paid":false},{"month":234,"inst":264,"due":"03/10/2046","year":2046,"open":2427848.25,"emi":45120.0,"prepay":0,"roi":7.95,"interest":16084.49,"principal":29035.51,"close":2398812.74,"paid":false},{"month":235,"inst":265,"due":"04/10/2046","year":2046,"open":2398812.74,"emi":45120.0,"prepay":0,"roi":7.95,"interest":15892.13,"principal":29227.87,"close":2369584.88,"paid":false},{"month":236,"inst":266,"due":"05/10/2046","year":2046,"open":2369584.88,"emi":45120.0,"prepay":0,"roi":7.95,"interest":15698.5,"principal":29421.5,"close":2340163.38,"paid":false},{"month":237,"inst":267,"due":"06/10/2046","year":2046,"open":2340163.38,"emi":45120.0,"prepay":0,"roi":7.95,"interest":15503.58,"principal":29616.42,"close":2310546.96,"paid":false},{"month":238,"inst":268,"due":"07/10/2046","year":2046,"open":2310546.96,"emi":45120.0,"prepay":0,"roi":7.95,"interest":15307.37,"principal":29812.63,"close":2280734.33,"paid":false},{"month":239,"inst":269,"due":"08/10/2046","year":2046,"open":2280734.33,"emi":45120.0,"prepay":0,"roi":7.95,"interest":15109.86,"principal":30010.14,"close":2250724.2,"paid":false},{"month":240,"inst":270,"due":"09/10/2046","year":2046,"open":2250724.2,"emi":45120.0,"prepay":0,"roi":7.95,"interest":14911.05,"principal":30208.95,"close":2220515.25,"paid":false},{"month":241,"inst":271,"due":"10/10/2046","year":2046,"open":2220515.25,"emi":45120.0,"prepay":0,"roi":7.95,"interest":14710.91,"principal":30409.09,"close":2190106.16,"paid":false},{"month":242,"inst":272,"due":"11/10/2046","year":2046,"open":2190106.16,"emi":45120.0,"prepay":0,"roi":7.95,"interest":14509.45,"principal":30610.55,"close":2159495.61,"paid":false},{"month":243,"inst":273,"due":"12/10/2046","year":2046,"open":2159495.61,"emi":45120.0,"prepay":0,"roi":7.95,"interest":14306.66,"principal":30813.34,"close":2128682.27,"paid":false},{"month":244,"inst":274,"due":"01/10/2047","year":2047,"open":2128682.27,"emi":45120.0,"prepay":0,"roi":7.95,"interest":14102.52,"principal":31017.48,"close":2097664.79,"paid":false},{"month":245,"inst":275,"due":"02/10/2047","year":2047,"open":2097664.79,"emi":45120.0,"prepay":0,"roi":7.95,"interest":13897.03,"principal":31222.97,"close":2066441.82,"paid":false},{"month":246,"inst":276,"due":"03/10/2047","year":2047,"open":2066441.82,"emi":45120.0,"prepay":0,"roi":7.95,"interest":13690.18,"principal":31429.82,"close":2035012.0,"paid":false},{"month":247,"inst":277,"due":"04/10/2047","year":2047,"open":2035012.0,"emi":45120.0,"prepay":0,"roi":7.95,"interest":13481.95,"principal":31638.05,"close":2003373.95,"paid":false},{"month":248,"inst":278,"due":"05/10/2047","year":2047,"open":2003373.95,"emi":45120.0,"prepay":0,"roi":7.95,"interest":13272.35,"principal":31847.65,"close":1971526.31,"paid":false},{"month":249,"inst":279,"due":"06/10/2047","year":2047,"open":1971526.31,"emi":45120.0,"prepay":0,"roi":7.95,"interest":13061.36,"principal":32058.64,"close":1939467.67,"paid":false},{"month":250,"inst":280,"due":"07/10/2047","year":2047,"open":1939467.67,"emi":45120.0,"prepay":0,"roi":7.95,"interest":12848.97,"principal":32271.03,"close":1907196.64,"paid":false},{"month":251,"inst":281,"due":"08/10/2047","year":2047,"open":1907196.64,"emi":45120.0,"prepay":0,"roi":7.95,"interest":12635.18,"principal":32484.82,"close":1874711.82,"paid":false},{"month":252,"inst":282,"due":"09/10/2047","year":2047,"open":1874711.82,"emi":45120.0,"prepay":0,"roi":7.95,"interest":12419.97,"principal":32700.03,"close":1842011.78,"paid":false},{"month":253,"inst":283,"due":"10/10/2047","year":2047,"open":1842011.78,"emi":45120.0,"prepay":0,"roi":7.95,"interest":12203.33,"principal":32916.67,"close":1809095.11,"paid":false},{"month":254,"inst":284,"due":"11/10/2047","year":2047,"open":1809095.11,"emi":45120.0,"prepay":0,"roi":7.95,"interest":11985.26,"principal":33134.74,"close":1775960.37,"paid":false},{"month":255,"inst":285,"due":"12/10/2047","year":2047,"open":1775960.37,"emi":45120.0,"prepay":0,"roi":7.95,"interest":11765.74,"principal":33354.26,"close":1742606.1,"paid":false},{"month":256,"inst":286,"due":"01/10/2048","year":2048,"open":1742606.1,"emi":45120.0,"prepay":0,"roi":7.95,"interest":11544.77,"principal":33575.23,"close":1709030.87,"paid":false},{"month":257,"inst":287,"due":"02/10/2048","year":2048,"open":1709030.87,"emi":45120.0,"prepay":0,"roi":7.95,"interest":11322.33,"principal":33797.67,"close":1675233.2,"paid":false},{"month":258,"inst":288,"due":"03/10/2048","year":2048,"open":1675233.2,"emi":45120.0,"prepay":0,"roi":7.95,"interest":11098.42,"principal":34021.58,"close":1641211.62,"paid":false},{"month":259,"inst":289,"due":"04/10/2048","year":2048,"open":1641211.62,"emi":45120.0,"prepay":0,"roi":7.95,"interest":10873.03,"principal":34246.97,"close":1606964.65,"paid":false},{"month":260,"inst":290,"due":"05/10/2048","year":2048,"open":1606964.65,"emi":45120.0,"prepay":0,"roi":7.95,"interest":10646.14,"principal":34473.86,"close":1572490.79,"paid":false},{"month":261,"inst":291,"due":"06/10/2048","year":2048,"open":1572490.79,"emi":45120.0,"prepay":0,"roi":7.95,"interest":10417.75,"principal":34702.25,"close":1537788.54,"paid":false},{"month":262,"inst":292,"due":"07/10/2048","year":2048,"open":1537788.54,"emi":45120.0,"prepay":0,"roi":7.95,"interest":10187.85,"principal":34932.15,"close":1502856.39,"paid":false},{"month":263,"inst":293,"due":"08/10/2048","year":2048,"open":1502856.39,"emi":45120.0,"prepay":0,"roi":7.95,"interest":9956.42,"principal":35163.58,"close":1467692.81,"paid":false},{"month":264,"inst":294,"due":"09/10/2048","year":2048,"open":1467692.81,"emi":45120.0,"prepay":0,"roi":7.95,"interest":9723.46,"principal":35396.54,"close":1432296.28,"paid":false},{"month":265,"inst":295,"due":"10/10/2048","year":2048,"open":1432296.28,"emi":45120.0,"prepay":0,"roi":7.95,"interest":9488.96,"principal":35631.04,"close":1396665.24,"paid":false},{"month":266,"inst":296,"due":"11/10/2048","year":2048,"open":1396665.24,"emi":45120.0,"prepay":0,"roi":7.95,"interest":9252.91,"principal":35867.09,"close":1360798.15,"paid":false},{"month":267,"inst":297,"due":"12/10/2048","year":2048,"open":1360798.15,"emi":45120.0,"prepay":0,"roi":7.95,"interest":9015.29,"principal":36104.71,"close":1324693.43,"paid":false},{"month":268,"inst":298,"due":"01/10/2049","year":2049,"open":1324693.43,"emi":45120.0,"prepay":0,"roi":7.95,"interest":8776.09,"principal":36343.91,"close":1288349.53,"paid":false},{"month":269,"inst":299,"due":"02/10/2049","year":2049,"open":1288349.53,"emi":45120.0,"prepay":0,"roi":7.95,"interest":8535.32,"principal":36584.68,"close":1251764.84,"paid":false},{"month":270,"inst":300,"due":"03/10/2049","year":2049,"open":1251764.84,"emi":45120.0,"prepay":0,"roi":7.95,"interest":8292.94,"principal":36827.06,"close":1214937.79,"paid":false},{"month":271,"inst":301,"due":"04/10/2049","year":2049,"open":1214937.79,"emi":45120.0,"prepay":0,"roi":7.95,"interest":8048.96,"principal":37071.04,"close":1177866.75,"paid":false},{"month":272,"inst":302,"due":"05/10/2049","year":2049,"open":1177866.75,"emi":45120.0,"prepay":0,"roi":7.95,"interest":7803.37,"principal":37316.63,"close":1140550.12,"paid":false},{"month":273,"inst":303,"due":"06/10/2049","year":2049,"open":1140550.12,"emi":45120.0,"prepay":0,"roi":7.95,"interest":7556.14,"principal":37563.86,"close":1102986.26,"paid":false},{"month":274,"inst":304,"due":"07/10/2049","year":2049,"open":1102986.26,"emi":45120.0,"prepay":0,"roi":7.95,"interest":7307.28,"principal":37812.72,"close":1065173.54,"paid":false},{"month":275,"inst":305,"due":"08/10/2049","year":2049,"open":1065173.54,"emi":45120.0,"prepay":0,"roi":7.95,"interest":7056.77,"principal":38063.23,"close":1027110.32,"paid":false},{"month":276,"inst":306,"due":"09/10/2049","year":2049,"open":1027110.32,"emi":45120.0,"prepay":0,"roi":7.95,"interest":6804.61,"principal":38315.39,"close":988794.93,"paid":false},{"month":277,"inst":307,"due":"10/10/2049","year":2049,"open":988794.93,"emi":45120.0,"prepay":0,"roi":7.95,"interest":6550.77,"principal":38569.23,"close":950225.69,"paid":false},{"month":278,"inst":308,"due":"11/10/2049","year":2049,"open":950225.69,"emi":45120.0,"prepay":0,"roi":7.95,"interest":6295.25,"principal":38824.75,"close":911400.94,"paid":false},{"month":279,"inst":309,"due":"12/10/2049","year":2049,"open":911400.94,"emi":45120.0,"prepay":0,"roi":7.95,"interest":6038.03,"principal":39081.97,"close":872318.97,"paid":false},{"month":280,"inst":310,"due":"01/10/2050","year":2050,"open":872318.97,"emi":45120.0,"prepay":0,"roi":7.95,"interest":5779.11,"principal":39340.89,"close":832978.08,"paid":false},{"month":281,"inst":311,"due":"02/10/2050","year":2050,"open":832978.08,"emi":45120.0,"prepay":0,"roi":7.95,"interest":5518.48,"principal":39601.52,"close":793376.56,"paid":false},{"month":282,"inst":312,"due":"03/10/2050","year":2050,"open":793376.56,"emi":45120.0,"prepay":0,"roi":7.95,"interest":5256.12,"principal":39863.88,"close":753512.68,"paid":false},{"month":283,"inst":313,"due":"04/10/2050","year":2050,"open":753512.68,"emi":45120.0,"prepay":0,"roi":7.95,"interest":4992.02,"principal":40127.98,"close":713384.7,"paid":false},{"month":284,"inst":314,"due":"05/10/2050","year":2050,"open":713384.7,"emi":45120.0,"prepay":0,"roi":7.95,"interest":4726.17,"principal":40393.83,"close":672990.88,"paid":false},{"month":285,"inst":315,"due":"06/10/2050","year":2050,"open":672990.88,"emi":45120.0,"prepay":0,"roi":7.95,"interest":4458.56,"principal":40661.44,"close":632329.44,"paid":false},{"month":286,"inst":316,"due":"07/10/2050","year":2050,"open":632329.44,"emi":45120.0,"prepay":0,"roi":7.95,"interest":4189.18,"principal":40930.82,"close":591398.62,"paid":false},{"month":287,"inst":317,"due":"08/10/2050","year":2050,"open":591398.62,"emi":45120.0,"prepay":0,"roi":7.95,"interest":3918.02,"principal":41201.98,"close":550196.64,"paid":false},{"month":288,"inst":318,"due":"09/10/2050","year":2050,"open":550196.64,"emi":45120.0,"prepay":0,"roi":7.95,"interest":3645.05,"principal":41474.95,"close":508721.69,"paid":false},{"month":289,"inst":319,"due":"10/10/2050","year":2050,"open":508721.69,"emi":45120.0,"prepay":0,"roi":7.95,"interest":3370.28,"principal":41749.72,"close":466971.97,"paid":false},{"month":290,"inst":320,"due":"11/10/2050","year":2050,"open":466971.97,"emi":45120.0,"prepay":0,"roi":7.95,"interest":3093.69,"principal":42026.31,"close":424945.66,"paid":false},{"month":291,"inst":321,"due":"12/10/2050","year":2050,"open":424945.66,"emi":45120.0,"prepay":0,"roi":7.95,"interest":2815.27,"principal":42304.73,"close":382640.93,"paid":false},{"month":292,"inst":322,"due":"01/10/2051","year":2051,"open":382640.93,"emi":45120.0,"prepay":0,"roi":7.95,"interest":2535.0,"principal":42585.0,"close":340055.92,"paid":false},{"month":293,"inst":323,"due":"02/10/2051","year":2051,"open":340055.92,"emi":45120.0,"prepay":0,"roi":7.95,"interest":2252.87,"principal":42867.13,"close":297188.79,"paid":false},{"month":294,"inst":324,"due":"03/10/2051","year":2051,"open":297188.79,"emi":45120.0,"prepay":0,"roi":7.95,"interest":1968.88,"principal":43151.12,"close":254037.67,"paid":false},{"month":295,"inst":325,"due":"04/10/2051","year":2051,"open":254037.67,"emi":45120.0,"prepay":0,"roi":7.95,"interest":1683.0,"principal":43437.0,"close":210600.67,"paid":false},{"month":296,"inst":326,"due":"05/10/2051","year":2051,"open":210600.67,"emi":45120.0,"prepay":0,"roi":7.95,"interest":1395.23,"principal":43724.77,"close":166875.9,"paid":false},{"month":297,"inst":327,"due":"06/10/2051","year":2051,"open":166875.9,"emi":45120.0,"prepay":0,"roi":7.95,"interest":1105.55,"principal":44014.45,"close":122861.45,"paid":false},{"month":298,"inst":328,"due":"07/10/2051","year":2051,"open":122861.45,"emi":45120.0,"prepay":0,"roi":7.95,"interest":813.96,"principal":44306.04,"close":78555.41,"paid":false},{"month":299,"inst":329,"due":"08/10/2051","year":2051,"open":78555.41,"emi":45120.0,"prepay":0,"roi":7.95,"interest":520.43,"principal":44599.57,"close":33955.84,"paid":false},{"month":300,"inst":330,"due":"09/10/2051","year":2051,"open":33955.84,"emi":45120.0,"prepay":0,"roi":7.95,"interest":224.96,"principal":33955.84,"close":0.0,"paid":false}];
-}
-
-function getHomeLoan() {
-  const d = getData() || emptyAppData();
-  if (!d.homeLoan || !d.homeLoan.length) { d.homeLoan = buildHomeLoan(); saveData(d); }
-  d.homeLoan.forEach(r => {
-    if (r.roi === undefined) r.roi = 7.95;
-    if (r.prepay === undefined) r.prepay = 0;
-    let e = Number(r.emi) || 0;
-    if (e <= 0 && r.emi0 !== undefined && Number(r.emi0) > 0) e = Number(r.emi0);
-    if (e <= 0) e = 45120;
-    r.emi = e;
-  });
-  return d.homeLoan;
-}
-
-function toggleHLYear(yr) {
-  const el = document.getElementById('hl-yr-' + yr);
-  const ic = document.getElementById('hl-ic-' + yr);
-  if (!el) return;
-  const open = el.style.display !== 'none';
-  el.style.display = open ? 'none' : 'block';
-  ic.textContent   = open ? '＋' : '－';
-}
-
-function toggleHLPaid(i, v) {
-  const d = getData() || emptyAppData();
-  if (!d.homeLoan) d.homeLoan = buildHomeLoan();
-  d.homeLoan[i].paid = v;
-  saveData(d); renderHomeLoan();
-}
-
-function updHL(i, k, v) {
-  const d = getData() || emptyAppData();
-  if (!d.homeLoan) d.homeLoan = buildHomeLoan();
-  d.homeLoan[i][k] = k === 'due' ? v : (Number(v) || 0);
-  saveData(d);
-  if (k !== 'due') { recalcHomeLoan(); } else { renderHomeLoan(); }
-}
-
-function recalcHomeLoan() {
-  const d = getData() || emptyAppData();
-  if (!d.homeLoan || !d.homeLoan.length) d.homeLoan = buildHomeLoan();
-  const hl = d.homeLoan;
-  const pristine = buildHomeLoan()[0].open;
-  const firstUnpaid = hl.findIndex(r => !r.paid);
-  const start = firstUnpaid === -1 ? hl.length : firstUnpaid;
-  for (let i = start; i < hl.length; i++) {
-    const r = hl[i];
-    let open;
-    if (i === start) {
-      const so = Number(r.open) || 0;
-      open = (so > 0 && so <= pristine * 1.2) ? so : pristine;
-    } else {
-      open = hl[i-1].close > 0 ? hl[i-1].close : 0;
-    }
-    const scheduled = (Number(r.emi) || 0) || 45120;
-    const roi   = Number(r.roi) || 0;
-    const prepay= open > 0 ? (Number(r.prepay) || 0) : 0;
-    const interest  = open > 0 ? open * roi / 100 / 12 : 0;
-    const principal = open > 0 ? Math.min(scheduled - interest, open) : 0;
-    const close     = open > 0 ? Math.max(0, open - principal - prepay) : 0;
-    r.open = open; r.interest = interest; r.principal = principal; r.close = close;
-  }
-  saveData(d);
-  renderHomeLoan();
-}
-
-function renderHomeLoan() {
-  const hl = getHomeLoan();
-  let corrupt = false;
-  const pbase = buildHomeLoan()[0].open;
-  hl.forEach(r => { if (r.interest < 0 || r.principal < 0 || (!r.paid && r.close < 0) || (!r.paid && r.open > pbase * 1.2)) corrupt = true; });
-  if (corrupt) { recalcHomeLoan(); return; }
-  const effEMI = r => (r.paid || r.open > 0) ? (Number(r.emi) || 0) : 0;
-
-  // Summary stats
-  let paidEMI=0, paidInt=0, paidPrin=0, paidCount=0;
-  let outEMI=0,  outInt=0,  outPrin=0,  outCount=0, lastClose=0;
-  hl.forEach(r => {
-    if (r.paid) { paidEMI+=effEMI(r); paidInt+=r.interest; paidPrin+=r.principal; paidCount++; }
-    else if (r.open > 0) { outEMI+=effEMI(r);  outInt+=r.interest;  outPrin+=r.principal;  outCount++;  lastClose=r.open; }
-  });
-  const totalEMI   = hl.reduce((s,r)=>s+effEMI(r),0);
-  const totalInt   = hl.reduce((s,r)=>s+r.interest,0);
-  const progress   = Math.round(paidCount/hl.length*100);
-
-  // Group by year
-  const byYear = {};
-  hl.forEach((r,i) => { if (!byYear[r.year]) byYear[r.year] = []; byYear[r.year].push({...r,_i:i}); });
-  const years  = Object.keys(byYear).map(Number).sort((a,b)=>a-b);
-
-  // OE box notes
-  const d   = getData() || emptyAppData();
-  const oen = d.hlNotes || '';
-
-  let html = `
-  <!-- Summary KPIs -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">
-    <div class="card" style="background:var(--green-lt);border:1px solid #bbf7d0;padding:12px 14px">
-      <div style="font-size:9.5px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">✅ Paid</div>
-      <div style="font-size:18px;font-weight:800;font-family:var(--mono);color:#059669">${paidCount} <span style="font-size:11px;font-weight:500">EMIs</span></div>
-      <div style="font-size:10.5px;color:var(--muted);margin-top:4px">EMI: ${fmt(paidEMI)}</div>
-      <div style="font-size:10.5px;color:var(--muted)">Interest: ${fmt(paidInt)}</div>
-    </div>
-    <div class="card" style="background:var(--red-lt);border:1px solid #fecaca;padding:12px 14px">
-      <div style="font-size:9.5px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">⏳ Outstanding</div>
-      <div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--expense)">${outCount} <span style="font-size:11px;font-weight:500">EMIs</span></div>
-      <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Balance: ${fmt(lastClose)}</div>
-      <div style="font-size:10.5px;color:var(--muted)">Interest left: ${fmt(outInt)}</div>
-    </div>
-    <div class="card" style="padding:12px 14px">
-      <div style="font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📊 Loan Summary</div>
-      <div style="font-size:10.5px;color:var(--muted)">Total EMI: <strong style="color:var(--text)">${fmt(totalEMI)}</strong></div>
-      <div style="font-size:10.5px;color:var(--muted)">Total Interest: <strong style="color:var(--expense)">${fmt(totalInt)}</strong></div>
-      <div style="font-size:10.5px;color:var(--muted)">ROI: <strong style="color:var(--blue)">7.95% p.a.</strong></div>
-      <div style="margin-top:7px">
-        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:3px"><span>Progress</span><span>${progress}%</span></div>
-        <div class="progress-bar" style="height:6px"><div class="progress-fill" style="width:${progress}%;background:var(--income)"></div></div>
-      </div>
-    </div>
-    <div class="card" style="padding:12px 14px">
-      <div style="font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📝 OE / Notes</div>
-      <textarea class="fi" rows="4" placeholder="Notes, prepayment plans, rate change reminders…" style="width:100%;resize:vertical;font-size:11px;min-height:72px" onchange="updHLNotes(this.value)">${esc(oen)}</textarea>
-    </div>
-  </div>
-
-  <!-- Year accordion -->
-  <div>`;
-
-  years.forEach(yr => {
-    const rows    = byYear[yr];
-    const yPaid   = rows.filter(r=>r.paid).length;
-    const yTotal  = rows.length;
-    const yEMI    = rows.reduce((s,r)=>s+effEMI(r),0);
-    const yInt    = rows.reduce((s,r)=>s+r.interest,0);
-    const yPrin   = rows.reduce((s,r)=>s+r.principal,0);
-    const allPaid = yPaid === yTotal;
-    const hasPaid = yPaid > 0;
-    const badge   = allPaid ? '✅' : hasPaid ? '🔄' : '⏳';
-
-    html += `
-    <div style="border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden">
-      <!-- Year header — click to expand -->
-      <div onclick="toggleHLYear(${yr})" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--card);cursor:pointer;user-select:none;gap:10px">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:14px;font-weight:800;color:var(--text)">${badge} ${yr}</span>
-          <span style="font-size:10px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 9px;color:var(--muted)">${yPaid}/${yTotal} paid</span>
-          <span style="font-size:10.5px;color:var(--muted)">EMI: <strong>${fmt(yEMI)}</strong></span>
-          <span style="font-size:10.5px;color:var(--expense)">Interest: <strong>${fmt(yInt)}</strong></span>
-          <span style="font-size:10.5px;color:var(--income)">Principal: <strong>${fmt(yPrin)}</strong></span>
-        </div>
-        <span id="hl-ic-${yr}" style="font-size:18px;font-weight:700;color:var(--blue);flex-shrink:0">＋</span>
-      </div>
-      <!-- Year rows — hidden by default -->
-      <div id="hl-yr-${yr}" style="display:none;overflow-x:auto">
-        <table class="cltbl" style="min-width:760px">
-          <thead><tr>
-            <th>✓</th><th>#</th><th>Inst.</th><th>Due Date</th>
-            <th>Opening (₹)</th><th>EMI (₹)</th><th>Prepay (₹)</th><th>ROI %</th>
-            <th>Interest (₹)</th><th>Principal (₹)</th><th>Closing (₹)</th>
-          </tr></thead>
-          <tbody>`;
-
-    rows.forEach(r => {
-      html += `<tr class="${r.paid?'is-paid':''}">
-        <td><input type="checkbox" ${r.paid?'checked':''} onchange="toggleHLPaid(${r._i},this.checked)" style="cursor:pointer;width:15px;height:15px"/></td>
-        <td style="color:var(--muted);font-size:10px">${r.month}</td>
-        <td style="color:var(--muted);font-size:10px">${r.inst}</td>
-        <td><input class="fi" value="${esc(r.due)}" onchange="updHL(${r._i},'due',this.value)" style="width:88px"/></td>
-        <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${fmt(r.open)}</td>
-        <td><input class="fi num" value="${effEMI(r).toFixed(2)}" onchange="updHL(${r._i},'emi',this.value)" style="width:80px"/></td>
-        <td><input class="fi num" value="${r.prepay}" onchange="updHL(${r._i},'prepay',this.value)" style="width:72px"/></td>
-        <td><input class="fi num" value="${r.roi}" onchange="updHL(${r._i},'roi',this.value)" style="width:60px"/></td>
-        <td style="font-family:var(--mono);font-size:11px;color:var(--expense)">${fmt(r.interest)}</td>
-        <td style="font-family:var(--mono);font-size:11px;color:var(--income)">${fmt(r.principal)}</td>
-        <td style="font-family:var(--mono);font-size:11px">${fmt(r.close)}</td>
-      </tr>`;
-    });
-
-    html += `</tbody></table></div></div>`;
-  });
-
-  html += `</div>`;
-  document.getElementById('liabContent').innerHTML = html;
-}
-
-function updHLNotes(v) {
-  const d = getData() || emptyAppData();
-  d.hlNotes = v;
-  saveData(d);
-}
-
 function renderAllLiab() {
   const d   = getData();
   if (!d || !d.liabilities || !d.liabilities.length) {
@@ -2097,8 +1854,6 @@ async function syncPull(silent = false) {
     if (remote.assets)      local.assets      = remote.assets;
     if (remote.liabilities) local.liabilities = remote.liabilities;
     if (remote.carLoan)     local.carLoan     = remote.carLoan;
-    if (remote.homeLoan)    local.homeLoan    = remote.homeLoan;
-    if (remote.hlNotes !== undefined) local.hlNotes = remote.hlNotes;
     saveData(local);
     if (remote._auth) {
       const la = getLocalAuth() || {};
