@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,8 +19,8 @@
   --sw:238px; --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{height:100%}
-body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-overflow-scrolling:touch;overflow:hidden}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-overflow-scrolling:touch}
 
 /* ═══════════════════════════════════════════
    LOGIN SCREEN — Glassmorphism + Animations
@@ -355,28 +354,6 @@ table.cltbl tr:hover td{background:#f8faff}
 .progress-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:5px}
 .progress-fill{height:100%;border-radius:3px;transition:width .4s}
 
-/* ═══ SAVINGS & INVESTMENT PANEL ═══ */
-.si-panel{
-  background:linear-gradient(135deg,#f0fdf4 0%,#f5f3ff 100%);
-  border:1.5px solid #bbf7d0;border-radius:var(--r);
-  padding:14px 16px;margin-bottom:14px;
-  box-shadow:0 2px 8px rgba(5,150,105,.08);
-}
-.si-panel-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap}
-.si-icon{font-size:22px;line-height:1;flex-shrink:0}
-.si-title{font-size:13px;font-weight:700;color:#065f46}
-.si-sub{font-size:10.5px;color:#6b7280;margin-top:2px}
-.si-rates{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.si-rate-chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
-.saving-chip{background:#dcfce7;color:#065f46;border:1px solid #86efac}
-.invest-chip{background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd}
-.total-chip{background:#fff;color:var(--text);border:1px solid var(--border)}
-
-/* ═══ SUM-BAR — wraps cleanly on any screen ═══ */
-.sum-bar{display:flex;flex-wrap:wrap;background:linear-gradient(135deg,#0d1b2e,#1a3060);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
-.sum-item{flex:1;min-width:110px;padding:12px 10px;text-align:center;border-right:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.06)}
-.sum-item:last-child{border-right:none}
-
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:1100px){
   .income-notes-row{grid-template-columns:1fr 280px}
@@ -386,60 +363,47 @@ table.cltbl tr:hover td{background:#f8faff}
   .grid-3{grid-template-columns:1fr 1fr}
   .expense-cols{grid-template-columns:1fr}
   .income-notes-row{grid-template-columns:1fr}
-  .sum-item{min-width:33%}
 }
-
-/* ── TABLET (768px) ──────────────────────────────────────────── */
 @media(max-width:768px){
-  .sidebar{position:fixed;top:0;left:0;width:var(--sw);height:100%;transform:translateX(-100%);transition:transform .3s ease;z-index:50;overflow-y:auto}
-  .sidebar.sb-open{transform:translateX(0);box-shadow:8px 0 32px rgba(0,0,0,.4)}
+  .sidebar{position:fixed;top:0;left:0;width:var(--sw);height:100vh;transform:translateX(-100%);transition:transform .3s ease;z-index:50}
+  .sidebar.sb-open{transform:translateX(0)}
   .mobile-topbar{display:flex}
-  .app-layout{flex-direction:column;height:calc(100% - 44px)}
-  .main-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
-  .main{flex:1;padding:14px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch;height:100%}
-  .page{overflow:visible;padding-bottom:24px}
+  .app-layout{flex-direction:column}
+  .main{padding:14px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .page{overflow:visible}
   .grid-4{grid-template-columns:1fr 1fr;gap:10px}
   .grid-2{grid-template-columns:1fr}
-  .grid-3{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:1fr}
   .expense-cols{grid-template-columns:1fr}
-  .income-notes-row{grid-template-columns:1fr}
-  .nw-val{font-size:26px}
-  .nw-hero{padding:16px 15px}
-  .nw-sub{flex-wrap:wrap;gap:10px}
-  .sum-item{min-width:50%;width:50%}
+  .nw-val{font-size:28px}
+  .nw-hero{padding:18px 16px}
+  .sum-bar{flex-wrap:wrap}
+  .sum-item{min-width:50%;border-bottom:1px solid rgba(255,255,255,.1)}
   .month-btn{padding:4px 9px;font-size:10.5px}
-  .modal{max-width:calc(100vw - 24px);margin:12px auto;padding:20px 18px}
+  .modal{max-width:100%;margin:10px;padding:20px 18px}
   table.atbl{min-width:440px}
   table.ltbl{min-width:500px}
   table.cltbl{min-width:560px}
   .ph-stats{flex-direction:column;gap:3px}
   .ri-val{width:85px}
   .col-hdr .ch-val{width:85px}
-  .chart-wrap{height:170px}
-  .si-panel-hdr{flex-direction:column}
-  .si-rates{gap:5px}
 }
-
-/* ── MOBILE (480px) ──────────────────────────────────────────── */
 @media(max-width:480px){
-  :root{--sw:82vw}
-  .grid-4{grid-template-columns:1fr 1fr;gap:8px}
-  .grid-3{grid-template-columns:1fr}
-  .login-card{padding:22px 16px;border-radius:16px;max-width:calc(100vw - 24px);margin:0 12px}
+  .grid-4{grid-template-columns:1fr}
+  .login-card{padding:22px 18px;border-radius:16px;max-width:100%}
   .login-logo-icon{width:50px;height:50px;font-size:22px}
   .login-logo-text{font-size:22px}
-  .user-pills{grid-template-columns:1fr 1fr;gap:8px}
   .main{padding:10px 8px}
   .page-hdr{flex-direction:column;align-items:flex-start;gap:6px}
-  .page-title{font-size:17px}
-  .kpi{padding:11px 12px}
-  .kpi-value{font-size:16px}
-  .kpi-label{font-size:9px}
+  .page-title{font-size:18px}
+  .kpi{padding:12px 13px}
+  .kpi-value{font-size:18px}
   .month-bar{gap:3px}
   .month-btn{padding:3px 7px;font-size:10px}
-  .sum-item{min-width:50%;width:50%;padding:10px 8px}
-  .sum-lbl{font-size:8.5px;letter-spacing:.3px}
-  .sum-val{font-size:13px}
+  .sum-bar{flex-direction:column}
+  .sum-item{min-width:100%;border-right:none;border-bottom:1px solid rgba(255,255,255,.1)}
+  .sum-item:last-child{border-bottom:none}
+  .sum-val{font-size:14px}
   .sec-hdr{padding:8px 10px}
   .sec-title{font-size:11px}
   .btn{padding:6px 11px;font-size:11.5px}
@@ -449,19 +413,9 @@ table.cltbl tr:hover td{background:#f8faff}
   .col-hdr{flex-wrap:wrap}
   .col-hdr .ch-val{width:100%;margin-left:4px}
   .toast{bottom:10px;right:10px;left:10px;text-align:center}
-  .modal-ov{padding:6px}
-  .modal{padding:16px 13px;max-height:95dvh;width:calc(100vw - 12px)}
+  .modal-ov{padding:8px}
+  .modal{padding:16px 14px;max-height:95vh}
   .tab-btn{padding:6px 10px;font-size:11px}
-  .chart-wrap{height:145px}
-  .nw-val{font-size:22px}
-  .nw-hero{padding:13px 12px}
-  .nw-sub{gap:8px}
-  .nw-sub-item{font-size:11px}
-  .grid-2{gap:8px;margin-bottom:10px}
-  .si-rate-chip{padding:3px 8px;font-size:10px}
-  .si-panel{padding:11px 12px}
-  .page-hdr .fi{width:100%!important}
-  .page-hdr>div:last-child{width:100%}
 }
 </style>
 </head>
@@ -594,12 +548,12 @@ table.cltbl tr:hover td{background:#f8faff}
           </div>
           <div class="grid-4" id="dashKPIs"></div>
           <div class="grid-2">
-            <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">Monthly Income vs Expense</div><div id="chartMonthlyWrap"><div class="chart-wrap"><canvas id="chartMonthly"></canvas></div></div></div>
-            <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">Expense Breakdown</div><div id="chartBreakdownWrap"><div class="chart-wrap"><canvas id="chartBreakdown"></canvas></div></div></div>
+            <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">Monthly Income vs Expense</div><div class="chart-wrap"><canvas id="chartMonthly"></canvas></div></div>
+            <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">Expense Breakdown</div><div class="chart-wrap"><canvas id="chartBreakdown"></canvas></div></div>
           </div>
           <div class="grid-3">
-            <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">Asset Split</div><div id="chartAssetsWrap"><div class="chart-wrap"><canvas id="chartAssets"></canvas></div></div></div>
-            <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">Saving &amp; Invest Rate</div><div id="savingView"></div></div>
+            <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">Asset Split</div><div class="chart-wrap"><canvas id="chartAssets"></canvas></div></div>
+            <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">Saving Rate</div><div id="savingView"></div></div>
             <div class="card"><div style="font-size:12.5px;font-weight:700;margin-bottom:9px">All Months</div><div id="monthSummary" style="max-height:200px;overflow-y:auto"></div></div>
           </div>
         </div>
@@ -610,15 +564,11 @@ table.cltbl tr:hover td{background:#f8faff}
           <div class="month-bar" id="monthBar"></div>
           <div class="sum-bar">
             <div class="sum-item"><div class="sum-lbl">Total Income</div><div class="sum-val g" id="sumInc">₹0</div></div>
-            <div class="sum-item"><div class="sum-lbl">Pure Expense</div><div class="sum-val r" id="sumExp">₹0</div></div>
+            <div class="sum-item"><div class="sum-lbl">Total Expense</div><div class="sum-val r" id="sumExp">₹0</div></div>
             <div class="sum-item"><div class="sum-lbl">Balance</div><div class="sum-val" id="sumBal" style="color:#fff">₹0</div></div>
-            <div class="sum-item"><div class="sum-lbl">Savings</div><div class="sum-val" style="color:#34d399" id="sumSave">₹0</div></div>
-            <div class="sum-item"><div class="sum-lbl">Investment</div><div class="sum-val" style="color:#a78bfa" id="sumInvest">₹0</div></div>
             <div class="sum-item"><div class="sum-lbl">Saving Rate</div><div class="sum-val b" id="sumRate">0%</div></div>
-            <div class="sum-item"><div class="sum-lbl">Invest Rate</div><div class="sum-val" style="color:#a78bfa" id="sumInvRate">0%</div></div>
           </div>
           <div class="income-notes-row" id="incomeNotesRow"></div>
-          <div id="siPanelWrap"></div>
           <div class="expense-cols" id="expCols"></div>
         </div>
 
@@ -671,14 +621,10 @@ table.cltbl tr:hover td{background:#f8faff}
       <input class="fi" type="url" id="settScriptUrl" placeholder="https://script.google.com/macros/s/.../exec"/>
       <label style="margin-bottom:8px;display:block;margin-top:10px">Auto-sync interval</label>
       <select class="fi" id="settAutoInterval" style="margin-bottom:12px">
-        <option value="5s">Every 5 seconds</option>
-        <option value="15s">Every 15 seconds</option>
-        <option value="30s">Every 30 seconds</option>
-        <option value="2" selected>Every 2 minutes</option>
-        <option value="5">Every 5 minutes</option>
+        <option value="2">Every 2 minutes</option>
+        <option value="5" selected>Every 5 minutes</option>
         <option value="10">Every 10 minutes</option>
         <option value="30">Every 30 minutes</option>
-        <option value="never">Never</option>
       </select>
       <div class="modal-footer">
         <button class="btn btn-sec" onclick="closeModal('settingsModal')">Cancel</button>
@@ -860,13 +806,7 @@ async function doLogin() {
       errEl.className = 'login-error hidden';
       getData();
       startAutoSync();
-      // Auto-pull on login if sync URL is configured
-      const sLogin = getSettings();
-      if (sLogin.scriptUrl) {
-        syncPull(true).finally(() => renderDashboard());
-      } else {
-        renderDashboard();
-      }
+      renderDashboard();
     } else {
       errEl.className   = 'login-error';
       errEl.textContent = '⚠ Incorrect password. Please try again.';
@@ -910,14 +850,10 @@ function toggleAutoSync() {
 
 function startAutoSync() {
   stopAutoSync();
-  const s = getSettings();
+  const s  = getSettings();
   if (!s.scriptUrl || !s.autoSync) return;
-  const val = s.autoInterval || '2';
-  if (val === 'never') return;                          // Never — only manual push
-  const ms = val.endsWith('s')
-    ? parseInt(val, 10) * 1000                          // seconds  e.g. "5s" → 5000
-    : parseInt(val, 10) * 60 * 1000;                   // minutes  e.g. "5"  → 300000
-  autoSyncTimer = setInterval(() => syncPush(true), ms);
+  const mins = parseInt(s.autoInterval || '5', 10);
+  autoSyncTimer = setInterval(() => syncPull(true), mins * 60 * 1000);
   updateSyncUI();
 }
 
@@ -925,10 +861,10 @@ function stopAutoSync() {
   if (autoSyncTimer) { clearInterval(autoSyncTimer); autoSyncTimer = null; }
 }
 
-// Debounced auto-push: fires 45s after last data change (only when sync configured)
+// Debounced auto-push: fires 45s after last data change
 function scheduleAutoPush() {
   const s = getSettings();
-  if (!s.scriptUrl || !s.autoSync) return;  // skip entirely when not configured
+  if (!s.scriptUrl || !s.autoSync) return;
   clearTimeout(autoPushTimer);
   autoPushTimer = setTimeout(() => syncPush(true), 45000);
 }
@@ -940,23 +876,15 @@ function updateSyncUI() {
   const dot = document.getElementById('syncDot');
   if (tog) tog.checked = !!(s.autoSync && s.scriptUrl);
   const on = !!(s.autoSync && s.scriptUrl);
-  if (lbl) {
-    if (!on) { lbl.textContent = ''; }
-    else {
-      const val = s.autoInterval || '2';
-      if (val === 'never')        lbl.textContent = 'manual';
-      else if (val.endsWith('s')) lbl.textContent = val;        // "5s", "15s", "30s"
-      else                        lbl.textContent = val + 'm';  // "2m", "5m" etc.
-    }
-  }
+  if (lbl) lbl.textContent = on ? (s.autoInterval || '5') + 'm' : '';
   if (dot) dot.classList.toggle('active', on);
 }
 
-// Push on tab-focus — ensures any unsaved local changes are flushed to sheet
+// Pull on tab-focus (catches changes made on another device)
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && sessionStorage.getItem('finapp_session')) {
     const s = getSettings();
-    if (s.scriptUrl && s.autoSync) syncPush(true);
+    if (s.scriptUrl && s.autoSync) syncPull(true);
   }
 });
 
@@ -990,14 +918,7 @@ function defaultMonth() {
     wifeSbi:           { monthly:{label:'Monthly Expenses',value:0,remark:''} },
     wifeSavings:       { rd:{label:'SBI to BOM – Savings',value:0,remark:''} },
     wifeMisc:          { other:{label:'Other',value:0,remark:''} },
-    wifeExtraSections: {},
-    // Savings & Investment section — separate from expenses
-    savingsInvest: {
-      rohitRd:       { label:'Rohit – RD / Saving',      value:0, remark:'', type:'saving' },
-      rohitSip:      { label:'Rohit – SIP / MF',         value:0, remark:'', type:'invest' },
-      dhanuRd:       { label:'Dhanashree – RD / Saving', value:0, remark:'', type:'saving' },
-      dhanuSip:      { label:'Dhanashree – SIP / MF',    value:0, remark:'', type:'invest' }
-    }
+    wifeExtraSections: {}
   };
 }
 
@@ -1075,45 +996,19 @@ const fmtS = v => { const n=Number(v)||0; return (n<0?'-₹':'₹')+Math.abs(n).
 const esc  = s => (s||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 function fetchWithTimeout(url, ms) {
-  let timer;
-  const fetchPromise = fetch(url, { redirect: 'follow' });
-  const timeoutPromise = new Promise((_, rej) => { timer = setTimeout(() => rej(new Error('Timeout')), ms); });
-  return Promise.race([fetchPromise, timeoutPromise]).finally(() => clearTimeout(timer));
+  return Promise.race([fetch(url,{redirect:'follow'}), new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout')),ms))]);
 }
 
 function calcMonthTotals(m) {
   const income   = Object.values(m.income||{}).reduce((s,v)=>s+(Number(v.value)||0),0);
-
-  const rohitExpRaw = ['icici','bom','boi','misc'].reduce((s,sec)=>s+Object.values(m[sec]||{}).reduce((a,v)=>a+(Number(v.value)||0),0),0)
-                    + Object.values(m.extraSections||{}).reduce((s,sec)=>s+Object.values(sec||{}).reduce((a,v)=>a+(Number(v.value)||0),0),0);
-  const wifeExpRaw  = ['wifeIcici','wifeSbi','wifeSavings','wifeMisc'].reduce((s,sec)=>s+Object.values(m[sec]||{}).reduce((a,v)=>a+(Number(v.value)||0),0),0)
-                    + Object.values(m.wifeExtraSections||{}).reduce((s,sec)=>s+Object.values(sec||{}).reduce((a,v)=>a+(Number(v.value)||0),0),0);
-
-  // SI breakdown — split by owner AND type
-  const siItems       = Object.values(m.savingsInvest||{});
-  const totalSave     = siItems.filter(v=>v.type==='saving').reduce((s,v)=>s+(Number(v.value)||0),0);
-  const totalInvest   = siItems.filter(v=>v.type==='invest').reduce((s,v)=>s+(Number(v.value)||0),0);
-  const totalSI       = totalSave + totalInvest;
-
-  // Per-owner SI totals (used to correct individual balance lines)
-  const rohitSI = siItems.filter(v=>(v.owner||'rohit')==='rohit').reduce((s,v)=>s+(Number(v.value)||0),0);
-  const dhanuSI = siItems.filter(v=>v.owner==='dhanashree').reduce((s,v)=>s+(Number(v.value)||0),0);
-
-  const rohitInc = (Number(m.income?.rohitSalary?.value)||0)+(Number(m.income?.houseRent?.value)||0)+(Number(m.income?.other?.value)||0);
-  const dhanuInc = Number(m.income?.dhanashreeSalary?.value)||0;
-
-  const totalRawExp = rohitExpRaw + wifeExpRaw;
-  const pureExp     = Math.max(0, totalRawExp - totalSI);
-
+  const rohitExp = ['icici','bom','boi','misc'].reduce((s,sec)=>s+Object.values(m[sec]||{}).reduce((a,v)=>a+(Number(v.value)||0),0),0)
+                 + Object.values(m.extraSections||{}).reduce((s,sec)=>s+Object.values(sec||{}).reduce((a,v)=>a+(Number(v.value)||0),0),0);
+  const wifeExp  = ['wifeIcici','wifeSbi','wifeSavings','wifeMisc'].reduce((s,sec)=>s+Object.values(m[sec]||{}).reduce((a,v)=>a+(Number(v.value)||0),0),0)
+                 + Object.values(m.wifeExtraSections||{}).reduce((s,sec)=>s+Object.values(sec||{}).reduce((a,v)=>a+(Number(v.value)||0),0),0);
   return {
-    income,
-    expense:    pureExp,
-    expenseRaw: totalRawExp,
-    rohitExp:   rohitExpRaw,
-    wifeExp:    wifeExpRaw,
-    totalSave, totalInvest, totalSI,
-    rohitSI, dhanuSI,
-    rohitInc, dhanuInc
+    income, expense:rohitExp+wifeExp, rohitExp, wifeExp,
+    rohitInc:(m.income?.rohitSalary?.value||0)+(m.income?.houseRent?.value||0)+(m.income?.other?.value||0),
+    dhanuInc: m.income?.dhanashreeSalary?.value||0
   };
 }
 
@@ -1136,7 +1031,7 @@ function emptyState() {
 }
 
 function getSectionObj(mData, secKey) {
-  const direct = ['income','icici','bom','boi','misc','wifeIcici','wifeSbi','wifeSavings','wifeMisc','savingsInvest'];
+  const direct = ['income','icici','bom','boi','misc','wifeIcici','wifeSbi','wifeSavings','wifeMisc'];
   if (direct.includes(secKey))        return mData[secKey] || null;
   if (secKey.startsWith('extra_'))    return (mData.extraSections||{})[secKey.slice(6)] || null;
   if (secKey.startsWith('wextra_'))   return (mData.wifeExtraSections||{})[secKey.slice(7)] || null;
@@ -1145,10 +1040,7 @@ function getSectionObj(mData, secKey) {
 
 function allMonthStats() {
   const d = getData() || emptyAppData();
-  return MONTHS.map(m => {
-    const t = calcMonthTotals(d.months[m]||defaultMonth());
-    return { month:m, ...t, balance: t.income - t.expense - t.totalSI };
-  });
+  return MONTHS.map(m => ({ month:m, ...calcMonthTotals(d.months[m]||defaultMonth()) }));
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1183,13 +1075,9 @@ function renderDashboard() {
     document.getElementById('nwVal').textContent = '₹0';
     document.getElementById('nwSub').innerHTML = '';
     document.getElementById('dashKPIs').innerHTML = '';
-    // Safely clear chart wrappers without relying on canvas.parentElement
-    ['chartMonthlyWrap','chartBreakdownWrap','chartAssetsWrap'].forEach(id=>{
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = '';
-    });
-    const mw = document.getElementById('chartMonthlyWrap');
-    if (mw) mw.innerHTML = emptyState();
+    document.getElementById('chartMonthly').parentElement.innerHTML = emptyState();
+    document.getElementById('chartBreakdown').parentElement.innerHTML = '';
+    document.getElementById('chartAssets').parentElement.innerHTML = '';
     document.getElementById('savingView').innerHTML = '';
     document.getElementById('monthSummary').innerHTML = '';
     return;
@@ -1198,53 +1086,33 @@ function renderDashboard() {
   const chosen   = sel.value;
   const allStats = allMonthStats();
   const stats    = chosen==='all' ? allStats : [allStats.find(s=>s.month===chosen)||allStats[0]];
-  const totInc     = stats.reduce((s,x)=>s+x.income,0);
-  const totExp     = stats.reduce((s,x)=>s+x.expense,0);        // pure expense (excl SI)
-  const totSave    = stats.reduce((s,x)=>s+(x.totalSave||0),0);
-  const totInvest  = stats.reduce((s,x)=>s+(x.totalInvest||0),0);
-  const totSI      = totSave + totInvest;
-  const totBal     = totInc - totExp - totSI;
-  const saveRate   = totInc>0 ? Math.round(totSave/totInc*100)   : 0;
-  const investRate = totInc>0 ? Math.round(totInvest/totInc*100) : 0;
-  const totA       = d.assets.reduce((s,a)=>s+(Number(a.rohit)||0)+(Number(a.dhanashree)||0),0);
-  const totL       = d.liabilities.reduce((s,l)=>s+(Number(l.amount)||0),0);
-  const nw         = totA-totL;
+  const totInc   = stats.reduce((s,x)=>s+x.income,0);
+  const totExp   = stats.reduce((s,x)=>s+x.expense,0);
+  const totBal   = totInc-totExp;
+  const rate     = totInc>0 ? Math.round(totBal/totInc*100) : 0;
+  const totA     = d.assets.reduce((s,a)=>s+(Number(a.rohit)||0)+(Number(a.dhanashree)||0),0);
+  const totL     = d.liabilities.reduce((s,l)=>s+(Number(l.amount)||0),0);
+  const nw       = totA-totL;
 
   document.getElementById('nwVal').textContent = fmtS(nw);
   document.getElementById('nwSub').innerHTML = `
     <div class="nw-sub-item">Assets: <strong>${fmt(totA)}</strong></div>
     <div class="nw-sub-item">Liabilities: <strong>${fmt(totL)}</strong></div>
-    <div class="nw-sub-item">Saving Rate: <strong>${saveRate}%</strong></div>
-    <div class="nw-sub-item">Invest Rate: <strong>${investRate}%</strong></div>`;
+    <div class="nw-sub-item">Saving Rate: <strong>${rate}%</strong></div>`;
 
   document.getElementById('dashKPIs').innerHTML = `
     <div class="kpi income"><div class="kpi-label">Total Income</div><div class="kpi-value income">${fmt(totInc)}</div><div class="kpi-sub">${chosen==='all'?'Annual':chosen}</div></div>
-    <div class="kpi expense"><div class="kpi-label">Pure Expense</div><div class="kpi-value expense">${fmt(totExp)}</div><div class="kpi-sub">${totInc>0?Math.round(totExp/totInc*100):0}% of income</div></div>
-    <div class="kpi saving"><div class="kpi-label">Saving Rate</div><div class="kpi-value saving">${saveRate}%</div><div class="kpi-sub">${fmt(totSave)} saved</div></div>
-    <div class="kpi invest"><div class="kpi-label">Invest Rate</div><div class="kpi-value invest">${investRate}%</div><div class="kpi-sub">${fmt(totInvest)} invested</div></div>`;
+    <div class="kpi expense"><div class="kpi-label">Total Expense</div><div class="kpi-value expense">${fmt(totExp)}</div><div class="kpi-sub">${totInc>0?Math.round(totExp/totInc*100):0}% of income</div></div>
+    <div class="kpi saving"><div class="kpi-label">Net Saving</div><div class="kpi-value saving">${fmtS(totBal)}</div><div class="kpi-sub">Rate: ${rate}%</div></div>
+    <div class="kpi invest"><div class="kpi-label">Net Worth</div><div class="kpi-value invest">${fmtS(nw)}</div><div class="kpi-sub">Assets − Liabilities</div></div>`;
 
-  // Ensure canvas elements exist (they may have been cleared by emptyState)
-  function ensureCanvas(wrapperId, canvasId) {
-    const wrap = document.getElementById(wrapperId);
-    if (!wrap) return null;
-    let canvas = document.getElementById(canvasId);
-    if (!canvas) {
-      wrap.innerHTML = '<div class="chart-wrap"><canvas id="'+canvasId+'"></canvas></div>';
-      canvas = document.getElementById(canvasId);
-    }
-    return canvas;
-  }
-
-  if (chartMon) { try { chartMon.destroy(); } catch(e){} chartMon = null; }
-  const canvasMon = ensureCanvas('chartMonthlyWrap', 'chartMonthly');
-  if (canvasMon) {
-    chartMon = new Chart(canvasMon.getContext('2d'),{
-      type:'bar', data:{labels:MONTHS,datasets:[
-        {label:'Income',data:allStats.map(s=>s.income),backgroundColor:'rgba(5,150,105,.7)',borderRadius:3},
-        {label:'Expense',data:allStats.map(s=>s.expense),backgroundColor:'rgba(220,38,38,.7)',borderRadius:3}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9},callback:v=>'₹'+Number(v).toLocaleString('en-IN')}}}}
-    });
-  }
+  if (chartMon) chartMon.destroy();
+  chartMon = new Chart(document.getElementById('chartMonthly').getContext('2d'),{
+    type:'bar', data:{labels:MONTHS,datasets:[
+      {label:'Income',data:allStats.map(s=>s.income),backgroundColor:'rgba(5,150,105,.7)',borderRadius:3},
+      {label:'Expense',data:allStats.map(s=>s.expense),backgroundColor:'rgba(220,38,38,.7)',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9},callback:v=>'₹'+Number(v).toLocaleString('en-IN')}}}}
+  });
 
   const mData = d.months[chosen==='all'?'Jan':chosen]||defaultMonth();
   const brkD  = {
@@ -1256,60 +1124,39 @@ function renderDashboard() {
     'SBI(D)':   Object.values(mData.wifeSbi||{}).reduce((s,v)=>s+(Number(v.value)||0),0),
     'Sav(D)':   Object.values(mData.wifeSavings||{}).reduce((s,v)=>s+(Number(v.value)||0),0),
   };
-  if (chartBrk) { try { chartBrk.destroy(); } catch(e){} chartBrk = null; }
-  const canvasBrk = ensureCanvas('chartBreakdownWrap', 'chartBreakdown');
-  if (canvasBrk) {
-    chartBrk = new Chart(canvasBrk.getContext('2d'),{
-      type:'doughnut',data:{labels:Object.keys(brkD),datasets:[{data:Object.values(brkD),backgroundColor:['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#f97316'],borderWidth:0}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}
-    });
-  }
+  if (chartBrk) chartBrk.destroy();
+  chartBrk = new Chart(document.getElementById('chartBreakdown').getContext('2d'),{
+    type:'doughnut',data:{labels:Object.keys(brkD),datasets:[{data:Object.values(brkD),backgroundColor:['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#f97316'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}
+  });
 
-  if (chartAst) { try { chartAst.destroy(); } catch(e){} chartAst = null; }
+  if (chartAst) chartAst.destroy();
   const nzA = d.assets.filter(a=>(Number(a.rohit)||0)+(Number(a.dhanashree)||0)>0);
-  const canvasAst = ensureCanvas('chartAssetsWrap', 'chartAssets');
-  if (canvasAst) {
-    chartAst = new Chart(canvasAst.getContext('2d'),{
-      type:'doughnut',data:{labels:nzA.map(a=>a.segment),datasets:[{data:nzA.map(a=>(Number(a.rohit)||0)+(Number(a.dhanashree)||0)),backgroundColor:['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#7c2d12','#1d4ed8','#6d28d9','#065f46'],borderWidth:0}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}
-    });
-  }
+  chartAst = new Chart(document.getElementById('chartAssets').getContext('2d'),{
+    type:'doughnut',data:{labels:nzA.map(a=>a.segment),datasets:[{data:nzA.map(a=>(Number(a.rohit)||0)+(Number(a.dhanashree)||0)),backgroundColor:['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#7c2d12','#1d4ed8','#6d28d9','#065f46'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}
+  });
 
-  const prog      = Math.min(100,Math.max(0,saveRate));
-  const progI     = Math.min(100,Math.max(0,investRate));
-  const rColor    = saveRate>=30?'var(--income)':saveRate>=15?'var(--saving)':'var(--expense)';
-  const combined  = saveRate+investRate;
+  const prog   = Math.min(100,Math.max(0,rate));
+  const rColor = rate>=30?'var(--income)':rate>=15?'var(--saving)':'var(--expense)';
   document.getElementById('savingView').innerHTML = `
-    <div style="text-align:center;padding:6px 0 2px">
-      <div style="display:flex;justify-content:center;gap:14px;margin-bottom:6px">
-        <div><div style="font-size:28px;font-weight:800;font-family:var(--mono);color:${rColor}">${saveRate}%</div><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Saving Rate</div></div>
-        <div style="width:1px;background:var(--border)"></div>
-        <div><div style="font-size:28px;font-weight:800;font-family:var(--mono);color:var(--invest)">${investRate}%</div><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Invest Rate</div></div>
-      </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:7px">${combined>=40?'🎯 Outstanding!':combined>=25?'👍 Great balance':combined>0?'⚠️ Room to grow':'❌ No SI data yet'}</div>
-      <div style="margin-bottom:4px">
-        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:2px"><span>Savings</span><span>${saveRate}%</span></div>
-        <div class="progress-bar" style="height:6px"><div class="progress-fill" style="width:${prog}%;background:var(--income)"></div></div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:2px"><span>Investments</span><span>${investRate}%</span></div>
-        <div class="progress-bar" style="height:6px"><div class="progress-fill" style="width:${progI}%;background:var(--invest)"></div></div>
-      </div>
+    <div style="text-align:center;padding:10px 0">
+      <div style="font-size:40px;font-weight:800;font-family:var(--mono);color:${rColor}">${rate}%</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${rate>=30?'🎯 Excellent!':rate>=15?'👍 Good':rate>0?'⚠️ Improve':'❌ Deficit'}</div>
+      <div class="progress-bar" style="margin-top:9px;height:7px"><div class="progress-fill" style="width:${prog}%;background:${rColor}"></div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:11px;margin-top:8px">
-      <div style="background:var(--green-lt);padding:6px 8px;border-radius:7px"><div style="color:var(--muted);font-size:9px">SAVINGS</div><div style="font-weight:700;color:var(--income)">${fmt(totSave)}</div></div>
-      <div style="background:#f5f3ff;padding:6px 8px;border-radius:7px"><div style="color:var(--muted);font-size:9px">INVESTMENTS</div><div style="font-weight:700;color:var(--invest)">${fmt(totInvest)}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:11px;margin-top:8px">
+      <div style="background:var(--green-lt);padding:7px 9px;border-radius:7px"><div style="color:var(--muted);font-size:9.5px">INCOME</div><div style="font-weight:700;color:var(--income)">${fmt(totInc)}</div></div>
+      <div style="background:var(--red-lt);padding:7px 9px;border-radius:7px"><div style="color:var(--muted);font-size:9.5px">EXPENSE</div><div style="font-weight:700;color:var(--expense)">${fmt(totExp)}</div></div>
     </div>`;
 
-  document.getElementById('monthSummary').innerHTML = allMonthStats().map(s=>{
-    const bal = s.balance;
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
+  document.getElementById('monthSummary').innerHTML = allMonthStats().map(s=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
       <span style="font-weight:600;width:36px">${s.month}</span>
       <span style="color:var(--income);font-family:var(--mono);font-size:10.5px">${fmt(s.income)}</span>
       <span style="color:var(--expense);font-family:var(--mono);font-size:10.5px">${fmt(s.expense)}</span>
-      <span style="font-weight:700;color:${bal>=0?'var(--income)':'var(--expense)'};font-family:var(--mono);font-size:10.5px">${bal>=0?'+':'-'}${fmt(Math.abs(bal))}</span>
-    </div>`;
-  }).join('');
+      <span style="font-weight:700;color:${s.balance>=0?'var(--income)':'var(--expense)'};font-family:var(--mono);font-size:10.5px">${s.balance>=0?'+':'-'}${fmt(s.balance)}</span>
+    </div>`).join('');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1359,76 +1206,10 @@ function renderPlanner() {
     </div>`;
   document.getElementById('incomeNotesRow').innerHTML = incHtml + notesHtml;
 
-  // ── Savings & Investment Panel ───────────────────────────────
-  const si = mData.savingsInvest || {};
-  const siTotalSave   = Object.values(si).filter(v=>v.type==='saving').reduce((s,v)=>s+(Number(v.value)||0),0);
-  const siTotalInvest = Object.values(si).filter(v=>v.type==='invest').reduce((s,v)=>s+(Number(v.value)||0),0);
-  const siTotal       = siTotalSave + siTotalInvest;
-  const income        = Object.values(mData.income||{}).reduce((s,v)=>s+(Number(v.value)||0),0);
-  const saveRateSI    = income>0 ? Math.round(siTotalSave/income*100)   : 0;
-  const investRateSI  = income>0 ? Math.round(siTotalInvest/income*100) : 0;
-
-  let siRows = `<div class="col-hdr" style="grid-template-columns:1fr 90px 90px 100px 1fr 24px">
-    <span class="ch-lbl">Label</span>
-    <span class="ch-val" style="width:90px">Amount (₹)</span>
-    <span style="width:90px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase">Type</span>
-    <span style="width:100px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase">Owner</span>
-    <span class="ch-rem">Remark</span>
-    <span class="ch-act"></span>
-  </div>`;
-  Object.keys(si).forEach(k=>{
-    const item  = si[k];
-    const owner = item.owner || 'rohit';
-    siRows += `<div class="row-item">
-      <div class="ri-lbl"><input class="fi" value="${esc(item.label)}" onchange="updateSIItem('${k}','label',this.value)"/></div>
-      <div class="ri-val"><input class="fi num" value="${Number(item.value)||0}" type="number" onchange="updateSIItem('${k}','value',this.value)"/></div>
-      <div style="width:90px;padding:0 2px">
-        <select class="fi" style="width:100%;font-size:11px" onchange="updateSIItem('${k}','type',this.value)">
-          <option value="saving"${item.type==='saving'?' selected':''}>💰 Saving</option>
-          <option value="invest"${item.type==='invest'?' selected':''}>📈 Invest</option>
-        </select>
-      </div>
-      <div style="width:100px;padding:0 2px">
-        <select class="fi" style="width:100%;font-size:11px" onchange="updateSIItem('${k}','owner',this.value)">
-          <option value="rohit"${owner==='rohit'?' selected':''}>👤 Rohit</option>
-          <option value="dhanashree"${owner==='dhanashree'?' selected':''}>👩 Dhanashree</option>
-        </select>
-      </div>
-      <div class="ri-rem"><input class="fi" value="${esc(item.remark||'')}" onchange="updateSIItem('${k}','remark',this.value)" placeholder="Remark"/></div>
-      <button class="btn-icon" onclick="deleteSIItem('${k}')">✕</button>
-    </div>`;
-  });
-
-  const siHtml = `<div class="si-panel">
-    <div class="si-panel-hdr">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="si-icon">💎</span>
-        <div>
-          <div class="si-title">Savings &amp; Investments</div>
-          <div class="si-sub">Excluded from Pure Expense · Tracked separately</div>
-        </div>
-      </div>
-      <div class="si-rates">
-        <div class="si-rate-chip saving-chip">💰 Savings <strong>${fmt(siTotalSave)}</strong> · <strong>${saveRateSI}%</strong></div>
-        <div class="si-rate-chip invest-chip">📈 Invest <strong>${fmt(siTotalInvest)}</strong> · <strong>${investRateSI}%</strong></div>
-        <div class="si-rate-chip total-chip">Total <strong>${fmt(siTotal)}</strong></div>
-      </div>
-    </div>
-    <div class="si-body">
-      <div class="sec-block" style="margin-bottom:0">
-        <div class="sec-body">
-          ${siRows}
-          <button class="btn-add" style="background:#f0fdf4;color:#059669;border-color:#86efac" onclick="addSIItem()">+ Add Saving / Investment Row</button>
-        </div>
-      </div>
-    </div>
-  </div>`;
-  document.getElementById('siPanelWrap').innerHTML = siHtml;
-
   // Build expense columns
   const t    = calcMonthTotals(mData);
-  const rBal = t.rohitInc - t.rohitExp - t.rohitSI;
-  const dBal = t.dhanuInc - t.wifeExp  - t.dhanuSI;
+  const rBal = t.rohitInc - t.rohitExp;
+  const dBal = t.dhanuInc - t.wifeExp;
 
   // ── Rohit column ────────────────────────────────────────
   let rohitSections = `
@@ -1457,7 +1238,6 @@ function renderPlanner() {
         <div class="ph-stats">
           <div class="ph-stat">Salary: <span>${fmt(t.rohitInc)}</span></div>
           <div class="ph-stat">Expense: <span>${fmt(t.rohitExp)}</span></div>
-          <div class="ph-stat">SI: <span style="color:#86efac">${fmt(t.rohitSI)}</span></div>
           <div class="ph-stat">Balance: <span style="color:${rBal>=0?'#86efac':'#fca5a5'}">${fmtS(rBal)}</span></div>
         </div>
       </div>
@@ -1472,7 +1252,6 @@ function renderPlanner() {
         <div class="ph-stats">
           <div class="ph-stat">Salary: <span>${fmt(t.dhanuInc)}</span></div>
           <div class="ph-stat">Expense: <span>${fmt(t.wifeExp)}</span></div>
-          <div class="ph-stat">SI: <span style="color:#86efac">${fmt(t.dhanuSI)}</span></div>
           <div class="ph-stat">Balance: <span style="color:${dBal>=0?'#86efac':'#fca5a5'}">${fmtS(dBal)}</span></div>
         </div>
       </div>
@@ -1490,85 +1269,6 @@ function updateNotes(val) {
   saveData(d);
   const el = document.getElementById('notesCnt');
   if (el) el.textContent = val.length + ' chars';
-}
-
-// ── Savings & Investment CRUD ────────────────────────────────
-
-// Build a deterministic asset key for an SI item so we can find/update it later
-function siAssetKey(month, siKey) {
-  return '__si__' + month + '__' + siKey;
-}
-
-// Sync one SI item → assets (upsert by assetKey)
-function syncSIToAsset(d, month, siKey, item) {
-  const aKey   = siAssetKey(month, siKey);
-  const amount = Number(item.value) || 0;
-  const seg    = (item.label || 'Saving').trim();
-  const remark = month + '_' + seg;
-  const owner  = item.owner || 'rohit'; // 'rohit' or 'dhanashree'
-
-  if (!d.assets) d.assets = [];
-  const idx = d.assets.findIndex(a => a._siKey === aKey);
-
-  if (amount <= 0) {
-    // Remove asset if value is zero/deleted
-    if (idx !== -1) d.assets.splice(idx, 1);
-    return;
-  }
-
-  const assetRow = {
-    _siKey:      aKey,
-    segment:     seg,
-    rohit:       owner === 'rohit'       ? amount : 0,
-    dhanashree:  owner === 'dhanashree'  ? amount : 0,
-    remark:      remark
-  };
-
-  if (idx !== -1) {
-    d.assets[idx] = assetRow;          // update
-  } else {
-    d.assets.push(assetRow);           // insert
-  }
-}
-
-// Remove asset rows linked to a deleted SI item
-function removeSIAsset(d, month, siKey) {
-  const aKey = siAssetKey(month, siKey);
-  if (!d.assets) return;
-  const idx = d.assets.findIndex(a => a._siKey === aKey);
-  if (idx !== -1) d.assets.splice(idx, 1);
-}
-
-function updateSIItem(k, field, val) {
-  const d = getData();
-  if (!d.months[curMonth]) d.months[curMonth] = defaultMonth();
-  if (!d.months[curMonth].savingsInvest) d.months[curMonth].savingsInvest = {};
-  const item = d.months[curMonth].savingsInvest[k];
-  if (!item) return;
-  item[field] = field === 'value' ? (Number(val) || 0) : val;
-  syncSIToAsset(d, curMonth, k, item);
-  saveData(d);
-  updateSummaryBar(d.months[curMonth]);
-  renderPlanner();
-}
-
-function deleteSIItem(k) {
-  const d = getData();
-  if (!d.months[curMonth]?.savingsInvest) return;
-  removeSIAsset(d, curMonth, k);
-  delete d.months[curMonth].savingsInvest[k];
-  saveData(d);
-  renderPlanner();
-}
-
-function addSIItem() {
-  const d = getData() || emptyAppData();
-  if (!d.months[curMonth]) d.months[curMonth] = defaultMonth();
-  if (!d.months[curMonth].savingsInvest) d.months[curMonth].savingsInvest = {};
-  const newKey = 'si_' + Date.now();
-  d.months[curMonth].savingsInvest[newKey] = { label: 'New Item', value: 0, remark: '', type: 'saving', owner: 'rohit' };
-  saveData(d);
-  renderPlanner();
 }
 
 function renderSecBlock(secKey, title, obj, isIncome=false) {
@@ -1619,22 +1319,13 @@ function updateItem(secKey, k, field, val) {
 }
 
 function updateSummaryBar(mData) {
-  const t    = calcMonthTotals(mData);
-  // Ribbon Balance = Rohit's balance + Dhanashree's balance
-  // Each person: Salary − Expense − their own SI
-  const rBal = t.rohitInc - t.rohitExp - t.rohitSI;
-  const dBal = t.dhanuInc - t.wifeExp  - t.dhanuSI;
-  const bal  = rBal + dBal;
-  const saveRate   = t.income>0 ? Math.round(t.totalSave/t.income*100)   : 0;
-  const investRate = t.income>0 ? Math.round(t.totalInvest/t.income*100) : 0;
-  document.getElementById('sumInc').textContent     = fmt(t.income);
-  document.getElementById('sumExp').textContent     = fmt(t.expense);
-  document.getElementById('sumBal').textContent     = fmtS(bal);
-  document.getElementById('sumBal').className       = 'sum-val '+(bal>=0?'g':'r');
-  document.getElementById('sumSave').textContent    = fmt(t.totalSave);
-  document.getElementById('sumInvest').textContent  = fmt(t.totalInvest);
-  document.getElementById('sumRate').textContent    = saveRate+'%';
-  document.getElementById('sumInvRate').textContent = investRate+'%';
+  const t = calcMonthTotals(mData);
+  document.getElementById('sumInc').textContent  = fmt(t.income);
+  document.getElementById('sumExp').textContent  = fmt(t.expense);
+  document.getElementById('sumBal').textContent  = fmtS(t.income - t.expense);
+  document.getElementById('sumBal').className    = 'sum-val '+(t.income-t.expense>=0?'g':'r');
+  const r = t.income>0 ? Math.round((t.income-t.expense)/t.income*100) : 0;
+  document.getElementById('sumRate').textContent = r+'%';
 }
 
 function updateSectionTotal(secKey, mData) {
@@ -1652,19 +1343,17 @@ function updateSectionTotal(secKey, mData) {
 
 function updatePersonHeaders(mData) {
   const t    = calcMonthTotals(mData);
-  const rBal = t.rohitInc - t.rohitExp - t.rohitSI;
-  const dBal = t.dhanuInc - t.wifeExp  - t.dhanuSI;
+  const rBal = t.rohitInc - t.rohitExp;
+  const dBal = t.dhanuInc - t.wifeExp;
   const rEl  = document.querySelector('.person-hdr.rohit .ph-stats');
   const dEl  = document.querySelector('.person-hdr.dhanu .ph-stats');
   if (rEl) rEl.innerHTML = `
     <div class="ph-stat">Salary: <span>${fmt(t.rohitInc)}</span></div>
     <div class="ph-stat">Expense: <span>${fmt(t.rohitExp)}</span></div>
-    <div class="ph-stat">SI: <span style="color:#86efac">${fmt(t.rohitSI)}</span></div>
     <div class="ph-stat">Balance: <span style="color:${rBal>=0?'#86efac':'#fca5a5'}">${fmtS(rBal)}</span></div>`;
   if (dEl) dEl.innerHTML = `
     <div class="ph-stat">Salary: <span>${fmt(t.dhanuInc)}</span></div>
     <div class="ph-stat">Expense: <span>${fmt(t.wifeExp)}</span></div>
-    <div class="ph-stat">SI: <span style="color:#86efac">${fmt(t.dhanuSI)}</span></div>
     <div class="ph-stat">Balance: <span style="color:${dBal>=0?'#86efac':'#fca5a5'}">${fmtS(dBal)}</span></div>`;
 }
 
@@ -1720,32 +1409,19 @@ function renderAssets() {
     <div class="kpi" style="border-color:var(--blue)"><div class="kpi-label">Rohit Total</div><div class="kpi-value" style="color:var(--blue)">${fmt(tR)}</div></div>
     <div class="kpi" style="border-color:var(--invest)"><div class="kpi-label">Dhanashree Total</div><div class="kpi-value" style="color:var(--invest)">${fmt(tD)}</div></div>
     <div class="kpi income"><div class="kpi-label">Combined</div><div class="kpi-value income">${fmt(tR+tD)}</div></div>`;
-  document.getElementById('assetBody').innerHTML = d.assets.map((a,i)=>{
-    const locked = !!a._siKey;
-    const lockTip = locked ? ' title="Linked to Savings & Investment entry — edit from Planner"' : '';
-    return `<tr${locked?' style="background:#f0fdf4"':''}>
-      <td><input class="fi" value="${esc(a.segment)}" onchange="updateAsset(${i},'segment',this.value)" style="width:130px"${locked?' readonly style="width:130px;background:#dcfce7;cursor:not-allowed"':''}/>${locked?'<span style="font-size:9px;color:#059669;margin-left:4px"${lockTip}>🔒 SI</span>':''}</td>
-      <td><input class="fi num" value="${Number(a.rohit)||0}" type="number" onchange="updateAsset(${i},'rohit',this.value)" style="width:110px"${locked?' readonly style="width:110px;background:#dcfce7;cursor:not-allowed"':''}/></td>
-      <td><input class="fi num" value="${Number(a.dhanashree)||0}" type="number" onchange="updateAsset(${i},'dhanashree',this.value)" style="width:110px"${locked?' readonly style="width:110px;background:#dcfce7;cursor:not-allowed"':''}/></td>
+  document.getElementById('assetBody').innerHTML = d.assets.map((a,i)=>`
+    <tr>
+      <td><input class="fi" value="${esc(a.segment)}" onchange="updateAsset(${i},'segment',this.value)" style="width:130px"/></td>
+      <td><input class="fi num" value="${Number(a.rohit)||0}" type="number" onchange="updateAsset(${i},'rohit',this.value)" style="width:110px"/></td>
+      <td><input class="fi num" value="${Number(a.dhanashree)||0}" type="number" onchange="updateAsset(${i},'dhanashree',this.value)" style="width:110px"/></td>
       <td style="font-weight:700;font-family:var(--mono);font-size:12.5px;color:var(--income)">${fmt((Number(a.rohit)||0)+(Number(a.dhanashree)||0))}</td>
-      <td><input class="fi" value="${esc(a.remark||'')}" onchange="updateAsset(${i},'remark',this.value)" placeholder="Notes…" style="width:160px"${locked?' readonly style="width:160px;background:#dcfce7;cursor:not-allowed"':''}/></td>
-      <td>${locked?'<span style="font-size:10px;color:#059669"${lockTip}>🔒</span>':`<button class="btn-icon" onclick="deleteAsset(${i})">✕</button>`}</td>
-    </tr>`;
-  }).join('');
+      <td><input class="fi" value="${esc(a.remark||'')}" onchange="updateAsset(${i},'remark',this.value)" placeholder="Notes…" style="width:160px"/></td>
+      <td><button class="btn-icon" onclick="deleteAsset(${i})">✕</button></td>
+    </tr>`).join('');
 }
 function updateAsset(i,k,v) { const d=getData()||emptyAppData(); d.assets[i][k]=k==='segment'||k==='remark'?v:(Number(v)||0); saveData(d); renderAssets(); }
 function addAsset()          { const d=getData()||emptyAppData(); d.assets.push({segment:'New Asset',rohit:0,dhanashree:0,remark:''}); saveData(d); renderAssets(); }
-function deleteAsset(i) {
-  const d = getData() || emptyAppData();
-  if (d.assets[i] && d.assets[i]._siKey) {
-    toast('This asset is linked to a Savings & Investment entry. Remove it from the Planner instead.', 'e');
-    return;
-  }
-  if (!confirm('Delete this asset?')) return;
-  d.assets.splice(i, 1);
-  saveData(d);
-  renderAssets();
-}
+function deleteAsset(i)      { if(!confirm('Delete this asset?')) return; const d=getData()||emptyAppData(); d.assets.splice(i,1); saveData(d); renderAssets(); }
 
 // ══════════════════════════════════════════════════════════════
 // LIABILITIES
@@ -1839,15 +1515,14 @@ function addCarRow()        { const d=getData()||emptyAppData(); d.carLoan.push(
 // ══════════════════════════════════════════════════════════════
 async function syncPull(silent = false) {
   const s = getSettings();
-  if (!s.scriptUrl || !s.scriptUrl.startsWith('https://')) {
-    if (!silent) toast('Set a valid Apps Script URL in ⚙️ Settings first', 'e');
-    return;
-  }
-  const statusEl = document.getElementById('syncStatus');
-  if (!silent && statusEl) statusEl.textContent = 'Pulling…';
+  if (!s.scriptUrl) { if (!silent) toast('Set Apps Script URL in ⚙️ Settings first', 'e'); return; }
+  if (!silent) document.getElementById('syncStatus').textContent = 'Pulling…';
   try {
-    const res    = await fetchWithTimeout(s.scriptUrl + '?action=read', 15000);
-    const remote = await res.json();
+    // Warmup GET to handle Apps Script cold start
+    await fetchWithTimeout(s.scriptUrl + '?action=read', 15000);
+    // Retry the actual pull
+    const res2   = await fetchWithTimeout(s.scriptUrl + '?action=read', 15000);
+    const remote = await res2.json();
     if (remote.error) throw new Error(remote.error);
     let local = getData() || emptyAppData();
     if (remote.months)      local.months      = { ...(local.months||{}), ...remote.months };
@@ -1855,63 +1530,56 @@ async function syncPull(silent = false) {
     if (remote.liabilities) local.liabilities = remote.liabilities;
     if (remote.carLoan)     local.carLoan     = remote.carLoan;
     saveData(local);
+    // Sync auth hashes if server provides them
     if (remote._auth) {
       const la = getLocalAuth() || {};
-      if (remote._auth.rohit)      la.rohit      = remote._auth.rohit;
-      if (remote._auth.dhanashree) la.dhanashree = remote._auth.dhanashree;
+      if (remote._auth.rohit)       la.rohit       = remote._auth.rohit;
+      if (remote._auth.dhanashree)  la.dhanashree  = remote._auth.dhanashree;
       saveLocalAuth(la);
     }
     const ts = new Date().toLocaleTimeString();
-    if (statusEl) statusEl.textContent = '↓ ' + ts;
-    const badge = document.getElementById('sbSyncBadge');
-    if (badge) { badge.style.display = 'inline'; badge.textContent = 'Live'; }
+    document.getElementById('syncStatus').textContent = '↓ ' + ts;
+    document.getElementById('sbSyncBadge').style.display = 'inline';
+    document.getElementById('sbSyncBadge').textContent = 'Live';
     if (!silent) toast('✅ Pulled from Google Sheets!', 's');
-    if      (curPage==='dashboard')   renderDashboard();
-    else if (curPage==='planner')     renderPlanner();
-    else if (curPage==='assets')      renderAssets();
-    else if (curPage==='liabilities') renderLiabilities();
+    if (curPage === 'dashboard')   renderDashboard();
+    else if (curPage === 'planner') renderPlanner();
+    else if (curPage === 'assets')  renderAssets();
+    else if (curPage === 'liabilities') renderLiabilities();
   } catch(err) {
-    // Manual pull: show feedback. Silent pull: swallow completely — no console, no UI noise.
-    if (!silent) {
-      if (statusEl) statusEl.textContent = '⚠ Pull failed';
-      toast('Pull failed: ' + err.message, 'e');
-    }
-    // Intentionally no console.error here — silent failures are expected when offline/unconfigured
+    console.error('[syncPull]', err);
+    document.getElementById('syncStatus').textContent = '⚠ Pull failed';
+    if (!silent) toast('Pull error: ' + err.message, 'e');
   }
 }
 
 async function syncPush(silent = false) {
   const s = getSettings();
-  if (!s.scriptUrl) {
-    if (!silent) toast('Set Apps Script URL in ⚙️ Settings first', 'e');
-    return;
-  }
-  const statusEl = document.getElementById('syncStatus');
-  if (!silent && statusEl) statusEl.textContent = 'Pushing…';
+  if (!s.scriptUrl) { if (!silent) toast('Set Apps Script URL in ⚙️ Settings first', 'e'); return; }
+  if (!silent) document.getElementById('syncStatus').textContent = 'Pushing…';
   try {
     const payload = { ...(getData()||emptyAppData()), _auth: getLocalAuth() };
-    let pushTimer;
+    // Warmup GET to handle Apps Script cold start
+    await fetchWithTimeout(s.scriptUrl, 15000);
+    // POST the actual data with timeout
     const res = await Promise.race([
       fetch(s.scriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        redirect: 'follow'
+        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload), redirect: 'follow'
       }),
-      new Promise((_,rej) => { pushTimer = setTimeout(()=>rej(new Error('Push timeout (15s)')), 15000); })
-    ]).finally(() => clearTimeout(pushTimer));
-    const result = await res.json();
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Push timeout (15s)')), 15000))
+    ]);
+    const result  = await res.json();
     if (result.error) throw new Error(result.error);
     const ts = new Date().toLocaleTimeString();
-    if (statusEl) statusEl.textContent = '↑ ' + ts;
-    const badge = document.getElementById('sbSyncBadge');
-    if (badge) { badge.style.display = 'inline'; badge.textContent = 'Live'; }
+    document.getElementById('syncStatus').textContent = '↑ ' + ts;
+    document.getElementById('sbSyncBadge').style.display = 'inline';
+    document.getElementById('sbSyncBadge').textContent = 'Live';
     if (!silent) toast('✅ Pushed to Google Sheets!', 's');
   } catch(err) {
-    if (!silent) {
-      if (statusEl) statusEl.textContent = '⚠ Push failed';
-      toast('Push failed: ' + err.message, 'e');
-    }
+    console.error('[syncPush]', err);
+    document.getElementById('syncStatus').textContent = '⚠ Push failed';
+    if (!silent) toast('Push error: ' + err.message, 'e');
   }
 }
 
@@ -2291,13 +1959,7 @@ function buildMonthRows_(md) {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('mainApp').style.display     = 'block';
       document.getElementById('sbUserName').textContent    = curUser==='rohit'?'👤 Rohit':'👩 Dhanashree';
-      startAutoSync();
-      const sRestore = getSettings();
-      if (sRestore.scriptUrl) {
-        syncPull(true).finally(() => renderDashboard());
-      } else {
-        renderDashboard();
-      }
+      renderDashboard();
       return;
     }
   } catch(e) {}
